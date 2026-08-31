@@ -1,0 +1,192 @@
+/* SilentShift - Enterprise Cyber Defense Theme */
+
+:root {
+  --color-cyber-bg: #07090e;
+  --color-cyber-card: #0c1017;
+  --color-cyber-border: rgba(34, 47, 70, 0.7);
+  --color-cyber-accent: #38bdf8;
+}
+
+body {
+  background-color: var(--color-cyber-bg);
+  background-image: 
+    radial-gradient(at 10% 10%, rgba(56, 189, 248, 0.05) 0px, transparent 40%),
+    radial-gradient(at 90% 90%, rgba(99, 102, 241, 0.05) 0px, transparent 40%),
+    radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.02) 0px, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Tab Switching Styling */
+.tab-btn {
+  color: #94a3b8;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-btn:hover {
+  color: #f8fafc;
+  background-color: rgba(34, 47, 70, 0.4);
+}
+
+.tab-btn.active-tab {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+}
+
+.tab-pane {
+  animation: fadeInPane 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInPane {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Transition State Badges */
+.badge-stable {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-early-drift {
+  background-color: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.badge-escalating {
+  background-color: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.badge-critical {
+  background-color: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.45);
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.2);
+  animation: pulseCritical 2s infinite ease-in-out;
+}
+
+@keyframes pulseCritical {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(244, 63, 94, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(244, 63, 94, 0.4);
+  }
+}
+
+/* Stat & Action Cards */
+.stat-card {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.12);
+}
+
+/* MITRE ATT&CK Matrix Tiles */
+.mitre-tile {
+  background: rgba(12, 16, 23, 0.9);
+  border: 1px solid rgba(34, 47, 70, 0.7);
+  transition: all 0.25s ease;
+}
+
+.mitre-tile.active-mitre {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.15), rgba(245, 158, 11, 0.15));
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.2);
+}
+
+/* SVG Blast Radius Graph Animations */
+.graph-node {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), stroke-width 0.2s ease;
+  cursor: pointer;
+}
+
+.graph-node:hover {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.8));
+}
+
+.graph-link {
+  stroke-dasharray: 4;
+  animation: dashFlow 20s linear infinite;
+}
+
+@keyframes dashFlow {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+/* Drawer transitions */
+#drawer-copilot.open-drawer {
+  transform: translateX(0);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #07090e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #222f46;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #324463;
+}
+
+/* Toast styling */
+.toast {
+  pointer-events: auto;
+  animation: toastSlideIn 0.3s ease forwards;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Enterprise Dropdown Menu Polish */
+#dropdown-enterprise-menu {
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 20px rgba(56, 189, 248, 0.08);
+  border-color: rgba(34, 47, 70, 0.85);
+  transform-origin: top right;
+}
+
+/* Enterprise Header Nav Hover effects */
+header nav button {
+  position: relative;
+}
+
+header nav button:not(.active-tab):hover {
+  background: rgba(34, 47, 70, 0.3);
+  color: #e2e8f0;
+}
+

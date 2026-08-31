@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SilentShift | Enterprise Behavioral Threat Transition Platform</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            cyber: {
+              950: '#07090e',
+              900: '#0c1017',
+              850: '#111722',
+              800: '#161f2e',
+              750: '#1c283c',
+              700: '#222f46',
+              600: '#324463',
+              accent: '#38bdf8',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              rose: '#f43f5e',
+              purple: '#a855f7'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-cyber-950 text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+
+  <!-- Top Enterprise Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-cyber-900/90 backdrop-blur-xl border-b border-cyber-700/60 h-16 shadow-2xl">
+    <div class="max-w-7xl h-full mx-auto px-6 flex items-center justify-between gap-6">
+      
+      <!-- Brand & Global Scope -->
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-400/30">
+          <i data-lucide="shield-alert" class="w-4.5 h-4.5 text-white"></i>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="text-lg font-bold tracking-tight text-white flex items-center">
+            Silent<span class="text-cyan-400">Shift</span>
+          </span>
+          <span class="px-2 py-0.5 text-[9px] font-mono font-semibold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 rounded-full">ITDR Platform</span>
+        </div>
+      </div>
+
+      <!-- Center: Tab Navigation (Segmented Enterprise Bar) -->
+      <nav class="hidden lg:flex items-center bg-cyber-950/70 p-1 rounded-xl border border-cyber-700/60 shadow-inner">
+        <button onclick="switchTab('overview')" id="tab-btn-overview" class="tab-btn active-tab flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all">
+          <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+          <span>Command Center</span>
+        </button>
+        <button onclick="switchTab('triage')" id="tab-btn-triage" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
+          <i data-lucide="list-filter" class="w-3.5 h-3.5"></i>
+          <span>Shift Triage</span>
+          <span id="nav-badge-triage" class="ml-1 px-1.5 py-0.2 text-[9px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-full">1</span>
+        </button>
+        <button onclick="switchTab('workbench')" id="tab-btn-workbench" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
+          <i data-lucide="microscope" class="w-3.5 h-3.5"></i>
+          <span>Investigator Workbench</span>
+        </button>
+        <button onclick="switchTab('context')" id="tab-btn-context" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
+          <i data-lucide="file-check-2" class="w-3.5 h-3.5"></i>
+          <span>Context & Policies</span>
+        </button>
+        <button onclick="switchTab('simulator')" id="tab-btn-simulator" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
+          <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Threat Simulator</span>
+        </button>
+      </nav>
+
+      <!-- Right: Enterprise Controls & User Profile Dropdown -->
+      <div class="flex items-center gap-2.5 shrink-0">
+        
+        <!-- Live Telemetry Status Pill -->
+        <div class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyber-950/80 border border-cyber-700/60 text-[11px] font-mono text-slate-400">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-300">Live</span>
+        </div>
+
+        <!-- ShiftCopilot AI Trigger Pill -->
+        <button onclick="toggleCopilotDrawer()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-950/40 hover:bg-purple-900/50 border border-purple-500/40 text-xs font-semibold text-purple-200 shadow-sm transition hover:border-purple-400/60">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>Copilot AI</span>
+        </button>
+
+        <!-- Executive Briefing Action Button -->
+        <button onclick="openBoardBriefingModal()" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyber-800 hover:bg-cyber-750 hover:text-white border border-cyber-600/70 text-xs font-semibold text-slate-200 shadow-sm transition">
+          <i data-lucide="file-presentation" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>Board Briefing</span>
+        </button>
+
+        <!-- Enterprise Tools / Role Dropdown -->
+        <div class="relative" id="enterprise-tools-container">
+          <button id="btn-enterprise-menu" onclick="toggleEnterpriseMenu()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyber-950/90 hover:bg-cyber-850 border border-cyber-700/70 hover:border-cyan-500/40 text-xs text-slate-200 transition">
+            <span class="w-2 h-2 rounded-full bg-cyan-400" id="role-dot-indicator"></span>
+            <span id="active-role-label" class="font-medium">SOC Analyst</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" id="enterprise-menu-chevron"></i>
+          </button>
+
+          <!-- Dropdown Panel -->
+          <div id="dropdown-enterprise-menu" class="hidden absolute right-0 mt-2 w-72 bg-cyber-900/98 backdrop-blur-2xl border border-cyber-700/80 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+            
+            <!-- Persona Switcher Section -->
+            <div class="px-2.5 py-1.5">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Perspective / Role</span>
+            </div>
+            
+            <div class="space-y-1">
+              <button onclick="setPersona('analyst'); closeEnterpriseMenu()" class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left hover:bg-cyber-800/80 transition group" id="opt-persona-analyst">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                    <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-semibold text-white group-hover:text-cyan-300">SOC Analyst</div>
+                    <div class="text-[10px] text-slate-400">Triage & rapid containment</div>
+                  </div>
+                </div>
+                <i data-lucide="check" class="w-3.5 h-3.5 text-cyan-400 persona-check" id="check-persona-analyst"></i>
+              </button>
+
+              <button onclick="setPersona('commander'); closeEnterpriseMenu()" class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left hover:bg-cyber-800/80 transition group" id="opt-persona-commander">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                    <i data-lucide="crosshair" class="w-3.5 h-3.5"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-semibold text-white group-hover:text-purple-300">Incident Commander</div>
+                    <div class="text-[10px] text-slate-400">Blast radius & ITSM dispatch</div>
+                  </div>
+                </div>
+                <i data-lucide="check" class="w-3.5 h-3.5 text-purple-400 persona-check hidden" id="check-persona-commander"></i>
+              </button>
+
+              <button onclick="setPersona('ciso'); closeEnterpriseMenu()" class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left hover:bg-cyber-800/80 transition group" id="opt-persona-ciso">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                    <i data-lucide="award" class="w-3.5 h-3.5"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-semibold text-white group-hover:text-amber-300">CISO / Executive</div>
+                    <div class="text-[10px] text-slate-400">ROI, MTTD & Board briefing</div>
+                  </div>
+                </div>
+                <i data-lucide="check" class="w-3.5 h-3.5 text-amber-400 persona-check hidden" id="check-persona-ciso"></i>
+              </button>
+            </div>
+
+            <!-- Divider -->
+            <div class="my-2 border-t border-cyber-700/60"></div>
+
+            <!-- Enterprise Ecosystem Hub -->
+            <button onclick="openIntegrationsModal(); closeEnterpriseMenu()" class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left hover:bg-cyber-800/80 transition group">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <i data-lucide="network" class="w-3.5 h-3.5"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-white group-hover:text-emerald-300">Ecosystem Hub</div>
+                  <div class="text-[10px] text-slate-400">Okta, Splunk, ServiceNow</div>
+                </div>
+              </div>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </button>
+
+            <!-- Board Briefing (mobile only in dropdown) -->
+            <button onclick="openBoardBriefingModal(); closeEnterpriseMenu()" class="w-full md:hidden flex items-center justify-between px-2.5 py-2 rounded-xl text-left hover:bg-cyber-800/80 transition group">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                  <i data-lucide="file-presentation" class="w-3.5 h-3.5"></i>
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-white group-hover:text-blue-300">Board Briefing</div>
+                  <div class="text-[10px] text-slate-400">Executive PDF export</div>
+                </div>
+              </div>
+            </button>
+
+            <!-- Reset Telemetry State -->
+            <button onclick="resetFleet(); closeEnterpriseMenu()" class="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-left hover:bg-cyber-800/80 text-slate-300 hover:text-white transition group">
+              <div class="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 group-hover:text-white">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+              </div>
+              <div>
+                <div class="text-xs font-semibold">Reset Demo State</div>
+                <div class="text-[10px] text-slate-400">Restore default fleet telemetry</div>
+              </div>
+            </button>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Mobile Tab Nav -->
+  <div class="lg:hidden flex overflow-x-auto bg-cyber-900 border-b border-cyber-700 px-4 py-2 gap-2 text-xs">
+    <button onclick="switchTab('overview')" class="px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-400 whitespace-nowrap">Command Center</button>
+    <button onclick="switchTab('triage')" class="px-3 py-1.5 rounded-lg text-slate-400 whitespace-nowrap">Shift Triage</button>
+    <button onclick="switchTab('workbench')" class="px-3 py-1.5 rounded-lg text-slate-400 whitespace-nowrap">Workbench</button>
+    <button onclick="switchTab('context')" class="px-3 py-1.5 rounded-lg text-slate-400 whitespace-nowrap">Context & Policies</button>
+    <button onclick="switchTab('simulator')" class="px-3 py-1.5 rounded-lg text-slate-400 whitespace-nowrap">Simulator</button>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+
+    <!-- ===================================================================================== -->
+    <!-- TAB 1: COMMAND CENTER (FLEET POSTURE & EXECUTIVE OVERVIEW) -->
+    <!-- ===================================================================================== -->
+    <section id="tab-overview" class="tab-pane active-pane space-y-6">
+      
+      <!-- CISO Executive ROI Metric Strip -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- MTTD Reduction -->
+        <div class="stat-card p-5 rounded-2xl bg-cyber-900/90 border border-cyber-700/60 shadow-xl relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-cyan-400">Dwell Time (MTTD)</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">-93.2%</span>
+          </div>
+          <div class="mt-2.5 flex items-baseline gap-2">
+            <span class="text-2xl font-black text-white font-mono">34 Hours</span>
+            <span class="text-xs text-slate-400 font-sans line-through">21 Days Avg</span>
+          </div>
+          <p class="mt-1 text-[11px] text-slate-400">Low-and-slow threats caught before exfiltration staging.</p>
+        </div>
+
+        <!-- Alert Fatigue Noise Reduction -->
+        <div class="stat-card p-5 rounded-2xl bg-cyber-900/90 border border-cyber-700/60 shadow-xl">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Alert Noise Suppressed</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">82.4%</span>
+          </div>
+          <div class="mt-2.5 flex items-baseline gap-2">
+            <span id="kpi-suppressed" class="text-2xl font-black text-emerald-400 font-mono">24</span>
+            <span class="text-xs text-slate-400 font-sans">False Alarms Averted</span>
+          </div>
+          <p class="mt-1 text-[11px] text-slate-400">Damped via approved Jira/ServiceNow business tickets.</p>
+        </div>
+
+        <!-- Financial Exposure Mitigated -->
+        <div class="stat-card p-5 rounded-2xl bg-cyber-900/90 border border-cyber-700/60 shadow-xl">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-400">Breach Liability Mitigated</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-500/20 text-purple-400 border border-purple-500/40">GDPR / PCI</span>
+          </div>
+          <div class="mt-2.5 flex items-baseline gap-2">
+            <span class="text-2xl font-black text-white font-mono">$2.4M</span>
+            <span class="text-xs text-slate-400 font-sans">Estimated Exposure</span>
+          </div>
+          <p class="mt-1 text-[11px] text-slate-400">Crown-jewel data lake and payment replica ringfenced.</p>
+        </div>
+
+        <!-- Continuous Audit Readiness -->
+        <div class="stat-card p-5 rounded-2xl bg-cyber-900/90 border border-cyber-700/60 shadow-xl">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-400">Audit Readiness</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-500/20 text-blue-400 border border-blue-500/40">SOC 2 / ISO</span>
+          </div>
+          <div class="mt-2.5 flex items-baseline gap-2">
+            <span class="text-2xl font-black text-white font-mono">99.2%</span>
+            <span class="text-xs text-slate-400 font-sans">Continuous CC6.1</span>
+          </div>
+          <p class="mt-1 text-[11px] text-slate-400">Automated cryptographic SHA-256 evidence logging.</p>
+        </div>
+
+      </div>
+
+      <!-- Tactical Posture Stats Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="p-4 rounded-xl bg-cyber-900 border border-cyber-700/60 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold text-slate-400 block">Active Identities Monitored</span>
+            <span id="kpi-monitored" class="text-xl font-bold text-white font-mono">12 Accounts</span>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <i data-lucide="users" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-cyber-900 border border-cyber-700/60 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold text-slate-400 block">Active Behavioral Shifts</span>
+            <span id="kpi-active-transitions" class="text-xl font-bold text-amber-400 font-mono">1 Drifting</span>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <i data-lucide="trending-up" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-cyber-900 border border-cyber-700/60 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-semibold text-slate-400 block">Critical Transition Alerts</span>
+            <span id="kpi-critical" class="text-xl font-bold text-rose-400 font-mono">0 Requiring Containment</span>
+          </div>
+          <div class="w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
+            <i data-lucide="shield-x" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Chart 1: Fleet Transition State Distribution -->
+        <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-cyan-400"></i>
+              Behavioral Transition Spectrum
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">Classification across 4 behavioral phases</p>
+          </div>
+          <div class="h-56 relative flex items-center justify-center my-2">
+            <canvas id="chart-fleet-spectrum"></canvas>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-cyber-700/40 font-mono">
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span><span class="text-slate-300">Stable:</span> <span id="label-count-stable" class="font-bold text-white">11</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-400"></span><span class="text-slate-300">Early Drift:</span> <span id="label-count-early" class="font-bold text-white">1</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span><span class="text-slate-300">Escalating:</span> <span id="label-count-escalating" class="font-bold text-white">0</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-rose-500"></span><span class="text-slate-300">Critical:</span> <span id="label-count-critical" class="font-bold text-white">0</span></div>
+          </div>
+        </div>
+
+        <!-- Chart 2: Fleet Dominant Anomaly Vectors -->
+        <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="radar" class="w-4 h-4 text-purple-400"></i>
+              Dominant Drift Vectors
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">Where behavioral deviations originate across the enterprise</p>
+          </div>
+          <div class="h-56 relative flex items-center justify-center my-2">
+            <canvas id="chart-fleet-vectors"></canvas>
+          </div>
+          <div class="text-xs text-slate-400 pt-2 border-t border-cyber-700/40 flex justify-between">
+            <span>Primary Driver: <strong class="text-cyan-300">Temporal & Resource Entropy</strong></span>
+            <span>Multimodal Fusion Active</span>
+          </div>
+        </div>
+
+        <!-- Enterprise Value Narrative Card -->
+        <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg flex flex-col justify-between">
+          <div class="space-y-3">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-4 h-4 text-cyan-400"></i>
+              Enterprise Architecture Differentiators
+            </h3>
+            <ul class="space-y-2.5 text-xs text-slate-300">
+              <li class="flex items-start gap-2">
+                <i data-lucide="check-circle2" class="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                <div><strong class="text-white">Zero Endpoint Agent Footprint:</strong> Integrates purely with CloudTrail, Okta, Azure AD, and VPC telemetry.</div>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check-circle2" class="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                <div><strong class="text-white">Low-and-Slow Correlation:</strong> Replaces rigid threshold rules with 48h half-life sliding-window decay.</div>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check-circle2" class="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                <div><strong class="text-white">Automated False-Positive Damping:</strong> Live 2-way sync with ServiceNow change tickets silences noise.</div>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check-circle2" class="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                <div><strong class="text-white">Audit Chain of Custody:</strong> Continuous cryptographic event hashing for seamless compliance audits.</div>
+              </li>
+            </ul>
+          </div>
+          <button onclick="switchTab('workbench')" class="w-full mt-4 py-2 px-3 bg-cyber-800 hover:bg-cyber-700 text-cyan-400 text-xs font-semibold rounded-xl border border-cyan-500/20 flex items-center justify-center gap-2 transition">
+            Launch Deep Investigation Workbench
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Quick Triage Queue Preview -->
+      <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+              Prioritized Identity Shift Queue
+            </h3>
+            <p class="text-xs text-slate-400">Real-time ranking of accounts showing active trajectory changes</p>
+          </div>
+          <button onclick="switchTab('triage')" class="text-xs text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1">
+            View All Alerts
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-cyber-850 text-slate-400 font-semibold border-b border-cyber-700/60">
+              <tr>
+                <th class="p-3">Identity / Role</th>
+                <th class="p-3">Department</th>
+                <th class="p-3">Risk Score</th>
+                <th class="p-3">Transition Phase</th>
+                <th class="p-3">Context Status</th>
+                <th class="p-3">Dominant Signals</th>
+                <th class="p-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="overview-alerts-tbody" class="divide-y divide-cyber-800 font-mono">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================================================== -->
+    <!-- TAB 2: SHIFT TRIAGE & ALERT QUEUE -->
+    <!-- ===================================================================================== -->
+    <section id="tab-triage" class="tab-pane hidden space-y-6">
+      
+      <!-- Filter Bar -->
+      <div class="p-4 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+            <input type="text" id="triage-search" oninput="applyTriageFilters()" placeholder="Filter by user, role, or asset..." class="pl-9 pr-3 py-1.5 bg-cyber-950 border border-cyber-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500 w-64 font-sans">
+          </div>
+          
+          <select id="triage-filter-status" onchange="applyTriageFilters()" class="px-3 py-1.5 bg-cyber-950 border border-cyber-700 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-cyan-500">
+            <option value="ALL">All Statuses</option>
+            <option value="OPEN">Open Alerts</option>
+            <option value="INVESTIGATING">Under Investigation</option>
+            <option value="DAMPED_BENIGN">Context Damped (Benign)</option>
+            <option value="RESOLVED_INCIDENT">Remediated Incidents</option>
+          </select>
+
+          <select id="triage-filter-dept" onchange="applyTriageFilters()" class="px-3 py-1.5 bg-cyber-950 border border-cyber-700 rounded-xl text-xs text-slate-300 focus:outline-none focus:border-cyan-500">
+            <option value="ALL">All Departments</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Infrastructure">Infrastructure</option>
+            <option value="Core Platform">Core Platform</option>
+            <option value="Finance">Finance</option>
+            <option value="Analytics">Analytics</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-400">Sort by:</span>
+          <span class="text-xs font-semibold text-cyan-400 bg-cyber-800 px-2.5 py-1 rounded-lg border border-cyber-700">Highest Cumulative Risk</span>
+        </div>
+      </div>
+
+      <!-- Main Accounts & Alerts Grid -->
+      <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="users" class="w-4 h-4 text-cyan-400"></i>
+            Enterprise Account Posture Matrix
+          </h3>
+          <span id="triage-count-label" class="text-xs text-slate-400">Showing 12 Accounts</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-cyber-850 text-slate-400 font-semibold border-b border-cyber-700/60">
+              <tr>
+                <th class="p-3">Identity</th>
+                <th class="p-3">Role & Dept</th>
+                <th class="p-3">Cumulative Risk</th>
+                <th class="p-3">Drift Velocity</th>
+                <th class="p-3">Transition Phase</th>
+                <th class="p-3">Context Protection</th>
+                <th class="p-3">Dominant Signal</th>
+                <th class="p-3 text-right">Enterprise Action</th>
+              </tr>
+            </thead>
+            <tbody id="triage-accounts-tbody" class="divide-y divide-cyber-800">
+              <!-- Dynamically populated with enterprise action menus -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================================================== -->
+    <!-- TAB 3: DEEP INVESTIGATOR WORKBENCH (CORE EXPLAINABILITY & TIMELINE) -->
+    <!-- ===================================================================================== -->
+    <section id="tab-workbench" class="tab-pane hidden space-y-6">
+      
+      <!-- User Selection & Profile Header Card -->
+      <div class="p-5 rounded-2xl bg-cyber-900/90 border border-cyber-700/60 shadow-xl space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          
+          <!-- Identity Details -->
+          <div class="flex items-center gap-4">
+            <div id="wb-avatar" class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-lg border border-cyan-400/40">
+              AM
+            </div>
+            <div>
+              <div class="flex items-center gap-3">
+                <h2 id="wb-username" class="text-lg font-bold text-white">alex.mercer</h2>
+                <span id="wb-state-badge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                  EARLY_DRIFT
+                </span>
+                <span id="wb-context-badge" class="hidden px-2.5 py-0.5 text-xs font-medium rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  Context Damped
+                </span>
+              </div>
+              <p id="wb-role-dept" class="text-xs text-slate-400 mt-0.5">Senior Frontend Engineer &bull; Engineering &bull; Peer Cohort: FrontEnd_Eng</p>
+            </div>
+          </div>
+
+          <!-- Quick Account Switcher & Score Badge -->
+          <div class="flex items-center gap-4">
+            <div class="text-right">
+              <span class="text-[10px] uppercase font-semibold text-slate-400 block">Composite Anomaly Risk</span>
+              <div class="flex items-baseline justify-end gap-1.5">
+                <span id="wb-risk-score" class="text-3xl font-black font-mono text-cyan-400">37.0</span>
+                <span class="text-xs text-slate-400 font-mono">/ 100</span>
+              </div>
+            </div>
+
+            <div class="border-l border-cyber-700 pl-4">
+              <label for="wb-select-user" class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Switch Account:</label>
+              <select id="wb-select-user" onchange="loadInvestigateAccount(this.value)" class="px-3 py-1.5 bg-cyber-950 border border-cyber-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500 font-mono">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Quick Triage Action Bar (With Dossier Exporter & AI Assistant Trigger) -->
+        <div class="pt-3 border-t border-cyber-700/60 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <i data-lucide="shield-alert" class="w-4 h-4 text-cyan-400"></i>
+            <span>Recommended Incident Playbook Actions:</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="triggerTriageAction('STEP_UP_MFA')" class="px-3 py-1.5 text-xs font-semibold bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 rounded-lg transition flex items-center gap-1.5">
+              <i data-lucide="key" class="w-3.5 h-3.5"></i>
+              Enforce Step-Up MFA
+            </button>
+            <button onclick="triggerTriageAction('QUARANTINE_SESSION')" class="px-3 py-1.5 text-xs font-semibold bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 rounded-lg transition flex items-center gap-1.5">
+              <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+              Quarantine Session
+            </button>
+            <button onclick="triggerTriageAction('RE_BASELINE')" class="px-3 py-1.5 text-xs font-semibold bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-lg transition flex items-center gap-1.5">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+              Accept & Update Baseline
+            </button>
+            <button onclick="exportCaseDossier()" class="px-3 py-1.5 text-xs font-semibold bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/40 rounded-lg transition flex items-center gap-1.5 shadow">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              Export Case Dossier (.md)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chronological Dual-Axis Timeline Chart & Flight Recorder Scrubber -->
+      <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="activity" class="w-4 h-4 text-cyan-400"></i>
+              Behavioral Drift Progression & Transition Curve
+            </h3>
+            <p class="text-xs text-slate-400">Chronological telemetry showing baseline variance vs. sliding-window cumulative risk</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs font-mono">
+            <div class="flex items-center gap-1.5"><span class="w-3 h-1 bg-cyan-400 rounded"></span><span class="text-slate-300">Cumulative Risk Curve</span></div>
+            <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span><span class="text-slate-300">Single Event Anomaly</span></div>
+          </div>
+        </div>
+        
+        <div class="h-64 relative">
+          <canvas id="chart-wb-timeline"></canvas>
+        </div>
+
+        <!-- Time-Travel Flight Recorder Controls -->
+        <div class="p-3.5 rounded-xl bg-cyber-950 border border-cyber-700/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <button id="btn-replay-play" onclick="toggleReplayPlayback()" class="w-9 h-9 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white flex items-center justify-center shadow-lg transition">
+              <i id="icon-replay-play" data-lucide="play" class="w-4 h-4"></i>
+            </button>
+            <button onclick="stepReplay(-1)" title="Step Back" class="w-8 h-8 rounded-lg bg-cyber-800 hover:bg-cyber-700 text-slate-300 flex items-center justify-center transition">
+              <i data-lucide="skip-back" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="stepReplay(1)" title="Step Forward" class="w-8 h-8 rounded-lg bg-cyber-800 hover:bg-cyber-700 text-slate-300 flex items-center justify-center transition">
+              <i data-lucide="skip-forward" class="w-3.5 h-3.5"></i>
+            </button>
+            <div class="border-l border-cyber-700 pl-3 flex items-center gap-1.5">
+              <span class="text-[10px] text-slate-400 font-semibold uppercase">Speed:</span>
+              <button onclick="setReplaySpeed(1)" id="btn-speed-1" class="px-2 py-0.5 rounded text-[11px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">1x</button>
+              <button onclick="setReplaySpeed(2)" id="btn-speed-2" class="px-2 py-0.5 rounded text-[11px] font-mono text-slate-400 hover:text-white">2x</button>
+              <button onclick="setReplaySpeed(5)" id="btn-speed-5" class="px-2 py-0.5 rounded text-[11px] font-mono text-slate-400 hover:text-white">5x</button>
+            </div>
+          </div>
+
+          <!-- Time-Travel Scrubber Slider -->
+          <div class="flex-1 max-w-md flex items-center gap-3">
+            <input type="range" id="replay-scrubber" min="1" max="30" value="30" oninput="scrubReplay(this.value)" class="w-full accent-cyan-400 cursor-pointer">
+            <span id="replay-time-label" class="font-mono text-[11px] text-cyan-300 whitespace-nowrap">Step 30/30 (Latest)</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Blast Radius & Graph Topology Card (With Interactive Filter Chips) -->
+      <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="network" class="w-4 h-4 text-purple-400"></i>
+              Interactive Blast Radius & Entity Access Graph
+            </h3>
+            <p class="text-xs text-slate-400">Visual mapping of targeted assets, credential pivot points, and regulatory compliance exposure</p>
+          </div>
+          
+          <!-- Filter Chips -->
+          <div class="flex items-center gap-2 text-[11px]">
+            <span class="text-slate-400">Filter View:</span>
+            <button onclick="filterBlastGraph('all')" id="btn-graph-all" class="px-2.5 py-1 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-medium">All Assets</button>
+            <button onclick="filterBlastGraph('crown')" id="btn-graph-crown" class="px-2.5 py-1 rounded-md bg-cyber-850 text-slate-400 hover:text-white font-medium">Crown Jewels (Tier 4-5)</button>
+            <button onclick="filterBlastGraph('pii')" id="btn-graph-pii" class="px-2.5 py-1 rounded-md bg-cyber-850 text-slate-400 hover:text-white font-medium">Customer PII</button>
+          </div>
+        </div>
+
+        <!-- SVG Graph Container & Side Exposure Panel -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+          
+          <!-- Visual SVG Graph (8 cols) -->
+          <div class="lg:col-span-8 h-80 rounded-xl bg-cyber-950 border border-cyber-700/70 p-2 relative flex items-center justify-center overflow-hidden">
+            <svg id="blast-radius-svg" class="w-full h-full"></svg>
+            <div class="absolute bottom-2 left-2 flex items-center gap-3 text-[10px] text-slate-400 bg-cyber-900/90 px-2.5 py-1 rounded-md border border-cyber-800">
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span> Identity</span>
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span> Baseline Asset</span>
+              <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Crown-Jewel Touch</span>
+            </div>
+          </div>
+
+          <!-- Regulatory & Data Exposure Metrics (4 cols) -->
+          <div class="lg:col-span-4 h-80 flex flex-col justify-between space-y-2 p-4 rounded-xl bg-cyber-950 border border-cyber-700/70">
+            <div class="space-y-3">
+              <h4 class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-cyan-400"></i>
+                Compliance Impact Analysis
+              </h4>
+              <div id="wb-compliance-list" class="space-y-2 text-xs">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+            <div class="pt-2 border-t border-cyber-800 text-[11px] text-slate-400 font-mono">
+              <div>Crown Jewels Touched: <strong id="wb-crown-count" class="text-rose-400">3</strong></div>
+              <div>PII Customer Data: <strong id="wb-pii-exposed" class="text-amber-400">Exposed</strong></div>
+              <div>PCI Vault Environment: <strong id="wb-pci-exposed" class="text-emerald-400">Isolated</strong></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Explainability Grid: Radar Breakdown + Plain Language Brief -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Radar / Feature Attribution Chart (5 cols) -->
+        <div class="lg:col-span-5 p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="compass" class="w-4 h-4 text-cyan-400"></i>
+              Multi-Vector Anomaly Attribution (XAI)
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">Relative contribution of behavioral vectors to current alert</p>
+          </div>
+          <div class="h-64 relative flex items-center justify-center my-2">
+            <canvas id="chart-wb-radar"></canvas>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-[11px] font-mono pt-2 border-t border-cyber-700/40">
+            <div class="text-slate-400">Temporal Shift: <span id="val-radar-temporal" class="font-bold text-white">0%</span></div>
+            <div class="text-slate-400">Resource Entropy: <span id="val-radar-resource" class="font-bold text-white">0%</span></div>
+            <div class="text-slate-400">Privilege Jump: <span id="val-radar-privilege" class="font-bold text-white">0%</span></div>
+            <div class="text-slate-400">Peer Divergence: <span id="val-radar-peer" class="font-bold text-white">0%</span></div>
+          </div>
+        </div>
+
+        <!-- Plain-Language SOC Narrative & Forensic Summary (7 cols) -->
+        <div class="lg:col-span-7 p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <i data-lucide="file-text" class="w-4 h-4 text-amber-400"></i>
+                SOC Automated Forensic Narrative
+              </h3>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-md">Explainable AI</span>
+            </div>
+            <div id="wb-narrative-text" class="mt-3 p-4 rounded-xl bg-cyber-950 border border-cyber-700/80 text-xs text-slate-300 leading-relaxed font-sans whitespace-pre-line">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Peer Group Benchmarking Box -->
+          <div class="p-3.5 rounded-xl bg-cyber-850 border border-cyber-700/50 space-y-2">
+            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i data-lucide="git-commit" class="w-3.5 h-3.5 text-blue-400"></i>
+              Peer Cohort Homology Benchmark
+            </span>
+            <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+              <div class="bg-cyber-900 p-2 rounded-lg">
+                <span class="text-[10px] text-slate-400 block">Cohort Median Risk</span>
+                <span id="wb-peer-avg" class="font-bold text-white">18.4</span>
+              </div>
+              <div class="bg-cyber-900 p-2 rounded-lg">
+                <span class="text-[10px] text-slate-400 block">Off-Hours Operation Rate</span>
+                <span id="wb-peer-offhours" class="font-bold text-white">3.8%</span>
+              </div>
+              <div class="bg-cyber-900 p-2 rounded-lg">
+                <span class="text-[10px] text-slate-400 block">Account Percentile</span>
+                <span id="wb-peer-percentile" class="font-bold text-amber-400">92nd %ile</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Interactive MITRE ATT&CK Matrix Grid -->
+      <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="target" class="w-4 h-4 text-rose-400"></i>
+            MITRE ATT&CK Tactical Heatmap Matrix
+          </h3>
+          <span class="text-xs text-slate-400">Active threat transition tactics illuminated</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-2">
+          <!-- Initial Access -->
+          <div class="p-3 rounded-xl bg-cyber-950 border border-cyber-700/80 space-y-2">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Initial Access</span>
+            <div class="mitre-tile active-mitre p-2 rounded-lg text-xs">
+              <div class="font-bold text-white">T1078 Valid Accounts</div>
+              <div class="text-[10px] text-cyan-300">Legitimate credentials drift</div>
+            </div>
+          </div>
+
+          <!-- Discovery -->
+          <div class="p-3 rounded-xl bg-cyber-950 border border-cyber-700/80 space-y-2">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Discovery</span>
+            <div id="tile-t1083" class="mitre-tile p-2 rounded-lg text-xs">
+              <div class="font-bold text-white">T1083 File Discovery</div>
+              <div class="text-[10px] text-slate-400">Resource entropy expansion</div>
+            </div>
+          </div>
+
+          <!-- Privilege Escalation -->
+          <div class="p-3 rounded-xl bg-cyber-950 border border-cyber-700/80 space-y-2">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Privilege Escalation</span>
+            <div id="tile-t1098" class="mitre-tile p-2 rounded-lg text-xs">
+              <div class="font-bold text-white">T1098 Account Manipulation</div>
+              <div class="text-[10px] text-slate-400">Role assumption / IAM sudo</div>
+            </div>
+          </div>
+
+          <!-- Defense Evasion -->
+          <div class="p-3 rounded-xl bg-cyber-950 border border-cyber-700/80 space-y-2">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Defense Evasion</span>
+            <div id="tile-t1562" class="mitre-tile p-2 rounded-lg text-xs">
+              <div class="font-bold text-white">T1562 Impair Defenses</div>
+              <div class="text-[10px] text-slate-400">Audit trail log tampering</div>
+            </div>
+          </div>
+
+          <!-- Exfiltration -->
+          <div class="p-3 rounded-xl bg-cyber-950 border border-cyber-700/80 space-y-2">
+            <span class="text-[10px] uppercase font-bold text-slate-400 block">Exfiltration</span>
+            <div id="tile-t1020" class="mitre-tile p-2 rounded-lg text-xs">
+              <div class="font-bold text-white">T1020 Auto Exfiltration</div>
+              <div class="text-[10px] text-slate-400">Bulk data egress / archive</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Baseline vs Observed Delta Table -->
+      <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg space-y-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="scale" class="w-4 h-4 text-cyan-400"></i>
+          Baseline Profile vs. Observed Shift Comparison
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-cyber-850 text-slate-400 font-semibold border-b border-cyber-700">
+              <tr>
+                <th class="p-2.5">Dimension</th>
+                <th class="p-2.5">Historical Baseline Norm</th>
+                <th class="p-2.5 text-cyan-300">Observed Recent Activity</th>
+              </tr>
+            </thead>
+            <tbody id="wb-baseline-vs-actual-tbody" class="divide-y divide-cyber-800">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Contributing Security Events (Forensic Feed) -->
+      <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg space-y-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="terminal" class="w-4 h-4 text-cyan-400"></i>
+          Recent Contributing Event Telemetry
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-cyber-850 text-slate-400 font-semibold border-b border-cyber-700">
+              <tr>
+                <th class="p-2.5">Timestamp</th>
+                <th class="p-2.5">Target Resource</th>
+                <th class="p-2.5">Action Executed</th>
+                <th class="p-2.5">Anomaly Score</th>
+                <th class="p-2.5">Context Damped</th>
+                <th class="p-2.5">Resulting State</th>
+              </tr>
+            </thead>
+            <tbody id="wb-events-tbody" class="divide-y divide-cyber-800">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================================================== -->
+    <!-- TAB 4: CONTEXT & POLICY MANAGEMENT (FALSE POSITIVE CONTROL) -->
+    <!-- ===================================================================================== -->
+    <section id="tab-context" class="tab-pane hidden space-y-6">
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="sliders" class="w-5 h-5 text-cyan-400"></i>
+            Context-Aware Damping & False Positive Control
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">
+            Configure legitimate organizational context (approved Jira change tickets, HR transitions, on-call schedules) and calibrate behavioral scoring sensitivity.
+          </p>
+        </div>
+        <button onclick="openAddContextModal()" class="px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold rounded-xl shadow-lg transition flex items-center gap-1.5">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          Register Business Context
+        </button>
+      </div>
+
+      <!-- Active Context Directory Table -->
+      <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="file-check" class="w-4 h-4 text-emerald-400"></i>
+            Active Enterprise Authorization Contexts
+          </h3>
+          <span class="text-xs text-slate-400">Matched during real-time event evaluation</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-cyber-850 text-slate-400 font-semibold border-b border-cyber-700">
+              <tr>
+                <th class="p-3">User & Dept</th>
+                <th class="p-3">Context Type</th>
+                <th class="p-3">Ticket / Approval Ref</th>
+                <th class="p-3">Description & Scope</th>
+                <th class="p-3">Damping Factor</th>
+                <th class="p-3">Validity Window</th>
+                <th class="p-3">Status</th>
+              </tr>
+            </thead>
+            <tbody id="context-registry-tbody" class="divide-y divide-cyber-800 font-mono">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Analytical Hyperparameter Tuner -->
+      <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg space-y-5">
+        <div>
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="tune" class="w-4 h-4 text-purple-400"></i>
+            Behavioral Engine Sensitivity & Decay Calibration
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">Adjust sliding-window memory and vector weights dynamically</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+          <!-- Decay Half-Life Slider -->
+          <div class="p-4 rounded-xl bg-cyber-950 border border-cyber-700/80 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-medium text-slate-300">Anomaly Decay Half-Life:</span>
+              <span id="label-halflife" class="font-mono text-cyan-400 font-bold">48 Hours</span>
+            </div>
+            <input type="range" id="slider-halflife" min="12" max="120" step="6" value="48" oninput="updateHalfLifeLabel(this.value)" class="w-full accent-cyan-400 cursor-pointer">
+            <p class="text-[11px] text-slate-500">Longer half-life increases sensitivity to ultra-slow insider attacks over weeks.</p>
+          </div>
+
+          <!-- Resource Weight Slider -->
+          <div class="p-4 rounded-xl bg-cyber-950 border border-cyber-700/80 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-medium text-slate-300">Resource Entropy Weight:</span>
+              <span id="label-weight-res" class="font-mono text-cyan-400 font-bold">0.35</span>
+            </div>
+            <input type="range" id="slider-weight-res" min="0.1" max="0.6" step="0.05" value="0.35" oninput="document.getElementById('label-weight-res').innerText = this.value" class="w-full accent-cyan-400 cursor-pointer">
+            <p class="text-[11px] text-slate-500">Influence of accessing novel or high-sensitivity crown-jewel assets.</p>
+          </div>
+
+          <!-- Temporal Weight Slider -->
+          <div class="p-4 rounded-xl bg-cyber-950 border border-cyber-700/80 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-medium text-slate-300">Temporal/Chrono Weight:</span>
+              <span id="label-weight-temp" class="font-mono text-cyan-400 font-bold">0.20</span>
+            </div>
+            <input type="range" id="slider-weight-temp" min="0.1" max="0.5" step="0.05" value="0.20" oninput="document.getElementById('label-weight-temp').innerText = this.value" class="w-full accent-cyan-400 cursor-pointer">
+            <p class="text-[11px] text-slate-500">Influence of off-hours, weekend, or circadian shifts.</p>
+          </div>
+
+        </div>
+
+        <div class="flex justify-end">
+          <button onclick="saveHyperparameters()" class="px-4 py-2 bg-cyber-800 hover:bg-cyber-700 text-cyan-400 text-xs font-semibold rounded-xl border border-cyan-500/30 transition flex items-center gap-2">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            Apply & Recalibrate Engine
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ===================================================================================== -->
+    <!-- TAB 5: LIVE THREAT SIMULATOR & TELEMETRY INJECTION -->
+    <!-- ===================================================================================== -->
+    <section id="tab-simulator" class="tab-pane hidden space-y-6">
+      
+      <!-- Simulator Header -->
+      <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg space-y-2">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <i data-lucide="flame" class="w-5 h-5 text-amber-400"></i>
+          Hackathon Threat Transition Scenarios
+        </h2>
+        <p class="text-xs text-slate-400 max-w-3xl">
+          Trigger real-world attack progressions and observe how SilentShift correlates weak signals into confident early detection while suppressing benign organizational changes.
+        </p>
+      </div>
+
+      <!-- 4 Scenarios Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <!-- Scenario 1: The Slow Poisoner -->
+        <div class="p-5 rounded-2xl bg-cyber-900/90 border border-cyber-700/60 shadow-lg flex flex-col justify-between space-y-4 hover:border-cyan-500/40 transition">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/30">Scenario 1</span>
+              <span class="text-xs text-slate-400 font-mono">Target: alex.mercer</span>
+            </div>
+            <h3 class="text-base font-bold text-white">The Slow Poisoner (Low-and-Slow Exfiltration)</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              A legitimate frontend engineer gradually begins probing customer database schemas, running late-night SQL queries, and finally staging bulk crown-jewel export. Individual actions look small, but sequence accumulation fires an alert before data leaves the network.
+            </p>
+          </div>
+          <button onclick="triggerScenario('slow_poisoner')" class="w-full py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white text-xs font-semibold rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+            <i data-lucide="play" class="w-4 h-4"></i>
+            Execute "Slow Poisoner" Simulation
+          </button>
+        </div>
+
+        <!-- Scenario 2: Compromised Admin -->
+        <div class="p-5 rounded-2xl bg-cyber-900/90 border border-cyber-700/60 shadow-lg flex flex-col justify-between space-y-4 hover:border-rose-500/40 transition">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30">Scenario 2</span>
+              <span class="text-xs text-slate-400 font-mono">Target: sarah.connor</span>
+            </div>
+            <h3 class="text-base font-bold text-white">The Compromised Admin (Credential Takeover)</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Adversary utilizes stolen credentials from an external IP at 02:00 AM. They attempt rapid IAM privilege escalation and audit log destruction. Although Sarah has a normal on-call ticket, the anti-tamper logic denies damping and fires a Critical alert.
+            </p>
+          </div>
+          <button onclick="triggerScenario('compromised_admin')" class="w-full py-2.5 bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white text-xs font-semibold rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+            <i data-lucide="play" class="w-4 h-4"></i>
+            Execute "Compromised Admin" Simulation
+          </button>
+        </div>
+
+        <!-- Scenario 3: Legitimate Project Switcher -->
+        <div class="p-5 rounded-2xl bg-cyber-900/90 border border-cyber-700/60 shadow-lg flex flex-col justify-between space-y-4 hover:border-emerald-500/40 transition">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Scenario 3</span>
+              <span class="text-xs text-slate-400 font-mono">Target: priya.patel</span>
+            </div>
+            <h3 class="text-base font-bold text-white">The Legitimate Project Switcher (Context Damping)</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Priya transfers to lead the "Project Titan" Data Lake migration and suddenly accesses unfamiliar high-tier database tables. In legacy systems, this causes alert storms; SilentShift matches active Change Ticket CHG-2024-9182 and damps risk by 75%.
+            </p>
+          </div>
+          <button onclick="triggerScenario('project_switcher')" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+            <i data-lucide="play" class="w-4 h-4"></i>
+            Execute "Project Switcher" (False Positive Control)
+          </button>
+        </div>
+
+        <!-- Scenario 4: Privilege Creep -->
+        <div class="p-5 rounded-2xl bg-cyber-900/90 border border-cyber-700/60 shadow-lg flex flex-col justify-between space-y-4 hover:border-purple-500/40 transition">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-md bg-purple-500/20 text-purple-400 border border-purple-500/30">Scenario 4</span>
+              <span class="text-xs text-slate-400 font-mono">Target: elena.rostova</span>
+            </div>
+            <h3 class="text-base font-bold text-white">Privilege Creep & Secret Vault Access</h3>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              A staff data scientist slowly acquires elevated service account tokens over several days, reads production secret manager keys, and executes off-hours sudo escalations beyond normal analytical scopes.
+            </p>
+          </div>
+          <button onclick="triggerScenario('privilege_creep')" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-semibold rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+            <i data-lucide="play" class="w-4 h-4"></i>
+            Execute "Privilege Creep" Simulation
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Live Custom Event Injection Tool -->
+      <div class="p-5 rounded-2xl bg-cyber-900/80 border border-cyber-700/60 shadow-lg space-y-4">
+        <div>
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="terminal" class="w-4 h-4 text-cyan-400"></i>
+            Interactive Live Telemetry Injector
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">Inject arbitrary security events to test behavioral response live</p>
+        </div>
+
+        <form id="form-inject-event" onsubmit="handleInjectCustomEvent(event)" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div>
+            <label class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Target Account:</label>
+            <select id="inject-user-id" class="w-full px-3 py-1.5 bg-cyber-950 border border-cyber-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500 font-mono">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <div>
+            <label class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Event Type:</label>
+            <select id="inject-event-type" class="w-full px-3 py-1.5 bg-cyber-950 border border-cyber-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+              <option value="FILE_ACCESS">FILE_ACCESS</option>
+              <option value="AUTHENTICATION">AUTHENTICATION</option>
+              <option value="PRIVILEGE_ACTION">PRIVILEGE_ACTION</option>
+              <option value="API_CALL">API_CALL</option>
+              <option value="NETWORK_EGRESS">NETWORK_EGRESS</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Resource Name:</label>
+            <input type="text" id="inject-resource" value="prod_customer_pii_vault" class="w-full px-3 py-1.5 bg-cyber-950 border border-cyber-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500 font-mono">
+          </div>
+
+          <div>
+            <label class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Sensitivity Tier:</label>
+            <select id="inject-sensitivity" class="w-full px-3 py-1.5 bg-cyber-950 border border-cyber-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500">
+              <option value="1">Tier 1 - Public/Internal</option>
+              <option value="2">Tier 2 - Internal Standard</option>
+              <option value="3">Tier 3 - Restricted Team</option>
+              <option value="4">Tier 4 - Confidential Prod</option>
+              <option value="5" selected>Tier 5 - Crown Jewel / Keys</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-[10px] uppercase font-semibold text-slate-400 block mb-1">Action Executed:</label>
+            <input type="text" id="inject-action" value="export_all" class="w-full px-3 py-1.5 bg-cyber-950 border border-cyber-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500 font-mono">
+          </div>
+
+          <div class="flex flex-col justify-end">
+            <button type="submit" class="w-full py-1.5 px-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1.5 shadow-md">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              Inject Event
+            </button>
+          </div>
+        </form>
+
+        <div class="flex items-center gap-4 text-xs pt-1">
+          <label class="flex items-center gap-2 cursor-pointer text-slate-300">
+            <input type="checkbox" id="inject-off-hours" checked class="rounded accent-cyan-400">
+            Simulate Off-Hours Operation (02:30 AM)
+          </label>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Modal: Enterprise Ecosystem Integrations Hub -->
+  <div id="modal-integrations" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-cyber-900 border border-cyber-700 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-cyber-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Enterprise Ecosystem Integrations</h3>
+            <p class="text-xs text-slate-400">Zero-agent telemetry ingress & bi-directional ticketing synchronization</p>
+          </div>
+        </div>
+        <button onclick="closeIntegrationsModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="integrations-list" class="space-y-3 text-xs">
+        <!-- Dynamically populated -->
+      </div>
+
+      <div class="pt-2 border-t border-cyber-800 flex justify-between items-center text-xs">
+        <span class="text-slate-400 font-mono text-[11px]">All connectors verified healthy // Zero packet drop</span>
+        <button onclick="testPingIntegrations()" class="px-3.5 py-1.5 bg-cyber-800 hover:bg-cyber-700 text-cyan-400 rounded-xl border border-cyan-500/30 font-semibold transition">
+          Trigger Sync Ping
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Executive Board Briefing Summary -->
+  <div id="modal-board-briefing" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-cyber-900 border border-cyber-700 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl font-sans">
+      <div class="flex items-center justify-between border-b border-cyber-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-white shadow">
+            <i data-lucide="file-presentation" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white">CISO Executive Board Briefing</h3>
+            <p class="text-xs text-slate-400">Enterprise Behavioral Threat Posture & Breach Liability Mitigation</p>
+          </div>
+        </div>
+        <button onclick="closeBoardBriefingModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="board-briefing-content" class="space-y-4 text-xs text-slate-300 leading-relaxed">
+        <!-- Dynamically generated board briefing -->
+      </div>
+
+      <div class="pt-3 border-t border-cyber-800 flex justify-between items-center text-xs">
+        <span class="text-slate-500 font-mono text-[11px]">Classification: STRICTLY CONFIDENTIAL // CISO & AUDIT COMMITTEE</span>
+        <div class="flex gap-2">
+          <button onclick="copyBoardBriefing()" class="px-3.5 py-1.5 bg-cyber-800 hover:bg-cyber-700 text-slate-200 rounded-xl font-medium transition">
+            Copy to Clipboard
+          </button>
+          <button onclick="downloadBoardBriefing()" class="px-3.5 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 text-white rounded-xl font-semibold transition">
+            Download PDF / Markdown
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ShiftCopilot AI Assistant Drawer -->
+  <div id="drawer-copilot" class="fixed right-0 top-0 bottom-0 w-96 max-w-full z-50 bg-cyber-900/95 backdrop-blur-md border-l border-cyber-700/80 shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300">
+    <div class="p-4 border-b border-cyber-700/70 flex items-center justify-between bg-cyber-850">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-600 to-purple-600 flex items-center justify-center text-white shadow">
+          <i data-lucide="bot" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <h3 class="text-xs font-bold text-white flex items-center gap-1.5">
+            ShiftCopilot AI
+            <span class="px-1.5 py-0.2 bg-cyan-500/20 text-cyan-300 text-[9px] font-mono rounded">SOC Analyst</span>
+          </h3>
+          <p class="text-[10px] text-slate-400">Context-Grounded Behavioral Intelligence</p>
+        </div>
+      </div>
+      <button onclick="toggleCopilotDrawer()" class="text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <div id="copilot-chat-log" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
+      <div class="p-3 rounded-xl bg-cyber-950 border border-cyber-800 text-slate-300 leading-relaxed">
+        👋 Hello Analyst! I am <strong>ShiftCopilot</strong>. I analyze behavioral baselines, temporal drift sequences, active business tickets, and blast radius in real time.
+        <br><br>
+        Ask me anything about the active investigation or choose a quick prompt below.
+      </div>
+    </div>
+
+    <div class="p-2 border-t border-cyber-800/80 bg-cyber-950 flex flex-wrap gap-1.5 text-[10px]">
+      <button onclick="sendQuickCopilotPrompt('Why was this account flagged?')" class="px-2 py-1 rounded bg-cyber-850 hover:bg-cyber-800 text-cyan-300 border border-cyber-700">Why flagged?</button>
+      <button onclick="sendQuickCopilotPrompt('Compare this account to its peers')" class="px-2 py-1 rounded bg-cyber-850 hover:bg-cyber-800 text-cyan-300 border border-cyber-700">Peer comparison</button>
+      <button onclick="sendQuickCopilotPrompt('What is the blast radius and compliance impact?')" class="px-2 py-1 rounded bg-cyber-850 hover:bg-cyber-800 text-cyan-300 border border-cyber-700">Blast radius</button>
+      <button onclick="sendQuickCopilotPrompt('Draft an urgent verification message for the manager')" class="px-2 py-1 rounded bg-cyber-850 hover:bg-cyber-800 text-cyan-300 border border-cyber-700">Draft manager email</button>
+    </div>
+
+    <form id="copilot-form" onsubmit="handleCopilotSubmit(event)" class="p-3 border-t border-cyber-700/80 flex gap-2 bg-cyber-900">
+      <input type="text" id="copilot-input" placeholder="Ask ShiftCopilot about this account..." class="flex-1 px-3 py-2 bg-cyber-950 border border-cyber-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500 font-sans">
+      <button type="submit" class="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-semibold shadow">
+        <i data-lucide="send" class="w-3.5 h-3.5"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- Modal: Register Business Context -->
+  <div id="modal-add-context" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-cyber-900 border border-cyber-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-cyber-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="file-plus-2" class="w-5 h-5 text-emerald-400"></i>
+          Register Legitimate Context
+        </h3>
+        <button onclick="closeAddContextModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-create-context" onsubmit="handleCreateContext(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="font-semibold text-slate-300 block mb-1">Target Account:</label>
+          <select id="ctx-user-id" class="w-full px-3 py-2 bg-cyber-950 border border-cyber-700 rounded-xl text-white font-mono">
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-300 block mb-1">Context Type:</label>
+          <select id="ctx-type" class="w-full px-3 py-2 bg-cyber-950 border border-cyber-700 rounded-xl text-white">
+            <option value="PROJECT_TRANSFER">PROJECT_TRANSFER (Role/Project Reassignment)</option>
+            <option value="APPROVED_CHANGE_TICKET">APPROVED_CHANGE_TICKET (Change Management)</option>
+            <option value="ON_CALL_ROTATION">ON_CALL_ROTATION (Emergency Duty)</option>
+            <option value="MAINTENANCE_WINDOW">MAINTENANCE_WINDOW (Scheduled Work)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-300 block mb-1">Ticket Reference:</label>
+          <input type="text" id="ctx-ticket-ref" placeholder="e.g. CHG-2024-8841 or JIRA-991" required class="w-full px-3 py-2 bg-cyber-950 border border-cyber-700 rounded-xl text-white font-mono">
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-300 block mb-1">Business Description:</label>
+          <input type="text" id="ctx-desc" placeholder="e.g. Q4 Data Lake Migration Core Access" required class="w-full px-3 py-2 bg-cyber-950 border border-cyber-700 rounded-xl text-white">
+        </div>
+
+        <div>
+          <label class="font-semibold text-slate-300 block mb-1">Target Resource Scope (comma separated):</label>
+          <input type="text" id="ctx-resources" placeholder="e.g. prod_datalake_s3, snowflake_titan_lake" class="w-full px-3 py-2 bg-cyber-950 border border-cyber-700 rounded-xl text-white font-mono">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-semibold text-slate-300 block mb-1">Risk Damping Factor:</label>
+            <input type="number" id="ctx-damping" min="0.1" max="0.9" step="0.05" value="0.30" class="w-full px-3 py-2 bg-cyber-950 border border-cyber-700 rounded-xl text-white font-mono">
+            <span class="text-[10px] text-slate-400">0.30 = 70% risk reduction</span>
+          </div>
+          <div>
+            <label class="font-semibold text-slate-300 block mb-1">Authorized By:</label>
+            <input type="text" id="ctx-approved-by" value="VP of Engineering" required class="w-full px-3 py-2 bg-cyber-950 border border-cyber-700 rounded-xl text-white">
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeAddContextModal()" class="px-4 py-2 bg-cyber-800 hover:bg-cyber-700 text-slate-300 rounded-xl">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl">Register Context</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Scripts -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
