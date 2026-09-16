@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SilentShift | Enterprise Behavioral Threat Transition Platform</title>
   
-  <!-- Fonts -->
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/static/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -51,77 +54,77 @@
   <!-- Custom Styles -->
   <link rel="stylesheet" href="/static/styles.css">
 </head>
-<body class="bg-cyber-950 text-slate-200 font-sans min-h-screen flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+<body class="bg-cyber-950 text-slate-200 font-sans min-h-screen w-full overflow-x-hidden flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
 
   <!-- Top Enterprise Navigation Bar -->
-  <header class="sticky top-0 z-40 bg-cyber-900/90 backdrop-blur-xl border-b border-cyber-700/60 h-16 shadow-2xl">
-    <div class="max-w-7xl h-full mx-auto px-6 flex items-center justify-between gap-6">
+  <header class="sticky top-0 z-40 bg-cyber-900/90 backdrop-blur-xl border-b border-cyber-700/60 h-16 shadow-2xl w-full">
+    <div class="w-full max-w-[1920px] h-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
       
       <!-- Brand & Global Scope -->
-      <div class="flex items-center gap-3 shrink-0">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-400/30">
+      <div class="flex items-center gap-2.5 shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-400/30 shrink-0">
           <i data-lucide="shield-alert" class="w-4.5 h-4.5 text-white"></i>
         </div>
-        <div class="flex items-center gap-2.5">
-          <span class="text-lg font-bold tracking-tight text-white flex items-center">
+        <div class="flex items-center gap-2">
+          <span class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center whitespace-nowrap">
             Silent<span class="text-cyan-400">Shift</span>
           </span>
-          <span class="px-2 py-0.5 text-[9px] font-mono font-semibold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 rounded-full">ITDR Platform</span>
+          <span class="hidden md:inline-block px-2 py-0.5 text-[9px] font-mono font-semibold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 rounded-full whitespace-nowrap">ITDR Platform</span>
         </div>
       </div>
 
-      <!-- Center: Tab Navigation (Segmented Enterprise Bar) -->
-      <nav class="hidden lg:flex items-center bg-cyber-950/70 p-1 rounded-xl border border-cyber-700/60 shadow-inner">
-        <button onclick="switchTab('overview')" id="tab-btn-overview" class="tab-btn active-tab flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all">
-          <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+      <!-- Center: Tab Navigation (Segmented Enterprise Bar for Wide 2xl+ Displays) -->
+      <nav class="hidden 2xl:flex items-center bg-cyber-950/70 p-1 rounded-xl border border-cyber-700/60 shadow-inner shrink-0">
+        <button onclick="switchTab('overview')" data-tab-id="overview" id="tab-btn-overview" class="tab-btn active-tab flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap">
+          <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 shrink-0"></i>
           <span>Command Center</span>
         </button>
-        <button onclick="switchTab('triage')" id="tab-btn-triage" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
-          <i data-lucide="list-filter" class="w-3.5 h-3.5"></i>
+        <button onclick="switchTab('triage')" data-tab-id="triage" id="tab-btn-triage" class="tab-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all whitespace-nowrap">
+          <i data-lucide="list-filter" class="w-3.5 h-3.5 shrink-0"></i>
           <span>Shift Triage</span>
-          <span id="nav-badge-triage" class="ml-1 px-1.5 py-0.2 text-[9px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-full">1</span>
+          <span id="nav-badge-triage" class="nav-badge-triage ml-0.5 px-1.5 py-0.2 text-[9px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-full">1</span>
         </button>
-        <button onclick="switchTab('workbench')" id="tab-btn-workbench" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
-          <i data-lucide="microscope" class="w-3.5 h-3.5"></i>
+        <button onclick="switchTab('workbench')" data-tab-id="workbench" id="tab-btn-workbench" class="tab-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all whitespace-nowrap">
+          <i data-lucide="microscope" class="w-3.5 h-3.5 shrink-0"></i>
           <span>Investigator Workbench</span>
         </button>
-        <button onclick="switchTab('context')" id="tab-btn-context" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
-          <i data-lucide="file-check-2" class="w-3.5 h-3.5"></i>
+        <button onclick="switchTab('context')" data-tab-id="context" id="tab-btn-context" class="tab-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all whitespace-nowrap">
+          <i data-lucide="file-check-2" class="w-3.5 h-3.5 shrink-0"></i>
           <span>Context & Policies</span>
         </button>
-        <button onclick="switchTab('simulator')" id="tab-btn-simulator" class="tab-btn flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">
-          <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-400"></i>
+        <button onclick="switchTab('simulator')" data-tab-id="simulator" id="tab-btn-simulator" class="tab-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all whitespace-nowrap">
+          <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
           <span>Threat Simulator</span>
         </button>
       </nav>
 
       <!-- Right: Enterprise Controls & User Profile Dropdown -->
-      <div class="flex items-center gap-2.5 shrink-0">
+      <div class="flex items-center gap-2 sm:gap-2.5 shrink-0 ml-auto">
         
         <!-- Live Telemetry Status Pill -->
-        <div class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyber-950/80 border border-cyber-700/60 text-[11px] font-mono text-slate-400">
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyber-950/80 border border-cyber-700/60 text-[11px] font-mono text-slate-400 shrink-0">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span class="text-slate-300">Live</span>
         </div>
 
         <!-- ShiftCopilot AI Trigger Pill -->
-        <button onclick="toggleCopilotDrawer()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-950/40 hover:bg-purple-900/50 border border-purple-500/40 text-xs font-semibold text-purple-200 shadow-sm transition hover:border-purple-400/60">
+        <button onclick="toggleCopilotDrawer()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-purple-950/40 hover:bg-purple-900/50 border border-purple-500/40 text-xs font-semibold text-purple-200 shadow-sm transition hover:border-purple-400/60 shrink-0 whitespace-nowrap">
           <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyan-400"></i>
           <span>Copilot AI</span>
         </button>
 
         <!-- Executive Briefing Action Button -->
-        <button onclick="openBoardBriefingModal()" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyber-800 hover:bg-cyber-750 hover:text-white border border-cyber-600/70 text-xs font-semibold text-slate-200 shadow-sm transition">
+        <button onclick="openBoardBriefingModal()" class="hidden md:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-cyber-800 hover:bg-cyber-750 hover:text-white border border-cyber-600/70 text-xs font-semibold text-slate-200 shadow-sm transition shrink-0 whitespace-nowrap">
           <i data-lucide="file-presentation" class="w-3.5 h-3.5 text-cyan-400"></i>
           <span>Board Briefing</span>
         </button>
 
         <!-- Enterprise Tools / Role Dropdown -->
-        <div class="relative" id="enterprise-tools-container">
-          <button id="btn-enterprise-menu" onclick="toggleEnterpriseMenu()" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyber-950/90 hover:bg-cyber-850 border border-cyber-700/70 hover:border-cyan-500/40 text-xs text-slate-200 transition">
-            <span class="w-2 h-2 rounded-full bg-cyan-400" id="role-dot-indicator"></span>
-            <span id="active-role-label" class="font-medium">SOC Analyst</span>
-            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" id="enterprise-menu-chevron"></i>
+        <div class="relative shrink-0" id="enterprise-tools-container">
+          <button id="btn-enterprise-menu" onclick="toggleEnterpriseMenu()" class="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-cyber-950/90 hover:bg-cyber-850 border border-cyber-700/70 hover:border-cyan-500/40 text-xs text-slate-200 transition shrink-0 whitespace-nowrap">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 shrink-0" id="role-dot-indicator"></span>
+            <span id="active-role-label" class="font-medium whitespace-nowrap">SOC Analyst</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200 shrink-0" id="enterprise-menu-chevron"></i>
           </button>
 
           <!-- Dropdown Panel -->
@@ -222,17 +225,35 @@
     </div>
   </header>
 
-  <!-- Mobile Tab Nav -->
-  <div class="lg:hidden flex overflow-x-auto bg-cyber-900 border-b border-cyber-700 px-4 py-2 gap-2 text-xs">
-    <button onclick="switchTab('overview')" class="px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-400 whitespace-nowrap">Command Center</button>
-    <button onclick="switchTab('triage')" class="px-3 py-1.5 rounded-lg text-slate-400 whitespace-nowrap">Shift Triage</button>
-    <button onclick="switchTab('workbench')" class="px-3 py-1.5 rounded-lg text-slate-400 whitespace-nowrap">Workbench</button>
-    <button onclick="switchTab('context')" class="px-3 py-1.5 rounded-lg text-slate-400 whitespace-nowrap">Context & Policies</button>
-    <button onclick="switchTab('simulator')" class="px-3 py-1.5 rounded-lg text-slate-400 whitespace-nowrap">Simulator</button>
-  </div>
+  <!-- Sub-Header Tab Navigation (Active on displays under 1536px) -->
+  <nav class="2xl:hidden w-full bg-cyber-900/95 backdrop-blur-md border-b border-cyber-700/60 shadow-md">
+    <div class="w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <button onclick="switchTab('overview')" data-tab-id="overview" class="tab-btn active-tab flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap">
+        <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 shrink-0"></i>
+        <span>Command Center</span>
+      </button>
+      <button onclick="switchTab('triage')" data-tab-id="triage" class="tab-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all whitespace-nowrap">
+        <i data-lucide="list-filter" class="w-3.5 h-3.5 shrink-0"></i>
+        <span>Shift Triage</span>
+        <span class="nav-badge-triage ml-0.5 px-1.5 py-0.2 text-[9px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-full">1</span>
+      </button>
+      <button onclick="switchTab('workbench')" data-tab-id="workbench" class="tab-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all whitespace-nowrap">
+        <i data-lucide="microscope" class="w-3.5 h-3.5 shrink-0"></i>
+        <span>Investigator Workbench</span>
+      </button>
+      <button onclick="switchTab('context')" data-tab-id="context" class="tab-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all whitespace-nowrap">
+        <i data-lucide="file-check-2" class="w-3.5 h-3.5 shrink-0"></i>
+        <span>Context & Policies</span>
+      </button>
+      <button onclick="switchTab('simulator')" data-tab-id="simulator" class="tab-btn flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all whitespace-nowrap">
+        <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+        <span>Threat Simulator</span>
+      </button>
+    </div>
+  </nav>
 
   <!-- Main Content Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+  <main class="flex-1 w-full max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
     <!-- ===================================================================================== -->
     <!-- TAB 1: COMMAND CENTER (FLEET POSTURE & EXECUTIVE OVERVIEW) -->
@@ -673,11 +694,17 @@
           <!-- Regulatory & Data Exposure Metrics (4 cols) -->
           <div class="lg:col-span-4 h-80 flex flex-col justify-between space-y-2 p-4 rounded-xl bg-cyber-950 border border-cyber-700/70">
             <div class="space-y-3">
-              <h4 class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-cyan-400"></i>
-                Compliance Impact Analysis
-              </h4>
-              <div id="wb-compliance-list" class="space-y-2 text-xs">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-cyan-400"></i>
+                  Compliance Impact Analysis
+                </h4>
+                <div class="flex items-center gap-1.5">
+                  <span id="wb-blast-score" class="font-mono text-xs font-bold text-rose-400">--</span>
+                  <span id="wb-blast-badge" class="px-1.5 py-0.2 text-[9px] font-bold rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">CRITICAL</span>
+                </div>
+              </div>
+              <div id="wb-compliance-list" class="space-y-2 text-xs overflow-y-auto max-h-44 pr-1">
                 <!-- Populated dynamically -->
               </div>
             </div>

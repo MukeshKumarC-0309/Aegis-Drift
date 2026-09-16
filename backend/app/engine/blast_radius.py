@@ -97,26 +97,51 @@ class BlastRadiusEngine:
         blast_score = min(100.0, round((composite_risk * 0.4) + (crown_jewel_count * 15.0) + (20.0 if pci_exposed else 0.0) + (15.0 if pii_exposed else 0.0), 1))
 
         compliance_violations = []
-        if pii_exposed and composite_risk >= 50:
+        if pii_exposed:
+            if composite_risk >= 50:
+                compliance_violations.append({
+                    "framework": "GDPR Art. 32 / 33",
+                    "risk": "Unauthorized Access to Customer Personal Data",
+                    "severity": "CRITICAL" if composite_risk >= 75 else "HIGH",
+                    "mandatory_notification": "72-hour DPA notification trigger potential"
+                })
+            else:
+                compliance_violations.append({
+                    "framework": "GDPR Art. 30 / CCPA",
+                    "risk": "Customer PII access telemetry logged under observation",
+                    "severity": "LOW",
+                    "mandatory_notification": "Auditable compliance journal record"
+                })
+
+        if pci_exposed:
+            if composite_risk >= 50:
+                compliance_violations.append({
+                    "framework": "PCI-DSS v4.0 Req. 7 & 10",
+                    "risk": "Payment Cardholder Environment Exposure",
+                    "severity": "CRITICAL",
+                    "mandatory_notification": "Acquiring bank notification required"
+                })
+            else:
+                compliance_violations.append({
+                    "framework": "PCI-DSS v4.0 Req. 7.2",
+                    "risk": "Payment vault interaction ringfenced & monitored",
+                    "severity": "LOW",
+                    "mandatory_notification": "No exfiltration indicators"
+                })
+
+        if crown_jewel_count >= 1:
             compliance_violations.append({
-                "framework": "GDPR Art. 32 / 33",
-                "risk": "Unauthorized Access to Customer Personal Data",
-                "severity": "CRITICAL" if composite_risk >= 75 else "HIGH",
-                "mandatory_notification": "72-hour DPA notification trigger potential"
+                "framework": "SOC 2 Type II (CC6.1 Access Separation)",
+                "risk": f"{crown_jewel_count} Tier 4/5 Crown Jewel resource(s) touched",
+                "severity": "HIGH" if composite_risk >= 65 else "MEDIUM",
+                "mandatory_notification": "Quarterly access certification review required"
             })
-        if pci_exposed and composite_risk >= 50:
+        else:
             compliance_violations.append({
-                "framework": "PCI-DSS v4.0 Req. 7 & 10",
-                "risk": "Payment Cardholder Environment Exposure",
-                "severity": "CRITICAL",
-                "mandatory_notification": "Acquiring bank notification required"
-            })
-        if crown_jewel_count >= 2:
-            compliance_violations.append({
-                "framework": "SOC 2 Type II (Trust Services Criteria CC6.1)",
-                "risk": "Deficiency in Logical Access Separation of Duties",
-                "severity": "MEDIUM",
-                "mandatory_notification": "Internal audit review required"
+                "framework": "ISO/IEC 27001:2022 A.9.4",
+                "risk": "Standard system operation within authorized role baseline",
+                "severity": "COMPLIANT",
+                "mandatory_notification": "Routine telemetry logged"
             })
 
         return {

@@ -24,6 +24,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   lucide.createIcons();
   await refreshAllData();
   
+  // Support deep-linking tabs via URL query param (e.g. from 404 page)
+  const urlParams = new URLSearchParams(window.location.search);
+  const requestedTab = urlParams.get('tab');
+  if (requestedTab && ['overview', 'triage', 'workbench', 'context', 'simulator'].includes(requestedTab)) {
+    switchTab(requestedTab);
+  }
+  
   setInterval(() => {
     if (currentActiveTab === 'overview' || currentActiveTab === 'triage') {
       refreshAllData(false);
@@ -113,6 +120,11 @@ function switchTab(tabId) {
     btn.classList.add('text-slate-400');
   });
 
+  document.querySelectorAll(`.tab-btn[data-tab-id="${tabId}"]`).forEach(btn => {
+    btn.classList.add('active-tab');
+    btn.classList.remove('text-slate-400');
+  });
+
   const activeBtn = document.getElementById(`tab-btn-${tabId}`);
   if (activeBtn) {
     activeBtn.classList.add('active-tab');
@@ -174,10 +186,9 @@ async function fetchOverview() {
     document.getElementById('kpi-critical').innerText = `${data.kpis.critical_risk_accounts} Critical`;
     document.getElementById('kpi-suppressed').innerText = data.kpis.suppressed_false_positives;
 
-    const triageBadge = document.getElementById('nav-badge-triage');
-    if (triageBadge) {
-      triageBadge.innerText = data.top_alerts.length;
-    }
+    document.querySelectorAll('.nav-badge-triage, #nav-badge-triage').forEach(badge => {
+      badge.innerText = data.top_alerts.length;
+    });
 
     const dist = data.transition_distribution;
     document.getElementById('label-count-stable').innerText = dist.STABLE || 0;
@@ -573,28 +584,66 @@ async function fetchAndRenderBlastRadius(userId) {
     const data = await res.json();
     activeBlastRadiusData = data;
 
-    document.getElementById('wb-blast-score').innerText = `${data.blast_radius_score.toFixed(1)} / 100`;
-    document.getElementById('wb-blast-badge').innerText = data.estimated_impact_level;
-    document.getElementById('wb-crown-count').innerText = data.crown_jewels_touched;
-    document.getElementById('wb-pii-exposed').innerText = data.pii_data_exposed ? 'Exposed (High Risk)' : 'Protected';
-    document.getElementById('wb-pci-exposed').innerText = data.pci_vault_exposed ? 'Vault Touched' : 'Isolated';
+    const blastScoreEl = document.getElementById('wb-blast-score');
+    if (blastScoreEl) blastScoreEl.innerText = `${data.blast_radius_score.toFixed(1)} / 100`;
+
+    const blastBadgeEl = document.getElementById('wb-blast-badge');
+    if (blastBadgeEl) {
+      blastBadgeEl.innerText = data.estimated_impact_level;
+      if (data.estimated_impact_level === 'CATASTROPHIC' || data.estimated_impact_level === 'HIGH') {
+        blastBadgeEl.className = 'px-1.5 py-0.2 text-[9px] font-bold rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 font-mono';
+      } else if (data.estimated_impact_level === 'MODERATE') {
+        blastBadgeEl.className = 'px-1.5 py-0.2 text-[9px] font-bold rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-mono';
+      } else {
+        blastBadgeEl.className = 'px-1.5 py-0.2 text-[9px] font-bold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono';
+      }
+    }
+
+    const crownEl = document.getElementById('wb-crown-count');
+    if (crownEl) crownEl.innerText = data.crown_jewels_touched;
+
+    const piiEl = document.getElementById('wb-pii-exposed');
+    if (piiEl) piiEl.innerText = data.pii_data_exposed ? 'Exposed (High Risk)' : 'Protected';
+
+    const pciEl = document.getElementById('wb-pci-exposed');
+    if (pciEl) pciEl.innerText = data.pci_vault_exposed ? 'Vault Touched' : 'Isolated';
 
     const compList = document.getElementById('wb-compliance-list');
-    compList.innerHTML = '';
-    if (!data.compliance_impacts || data.compliance_impacts.length === 0) {
-      compList.innerHTML = `<div class="text-slate-400 text-[11px]">No regulatory thresholds breached. Operations within baseline compliance limits.</div>`;
-    } else {
-      data.compliance_impacts.forEach(c => {
-        compList.innerHTML += `
-          <div class="p-2 rounded-lg bg-cyber-900 border border-cyber-800">
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-white font-mono text-[10px]">${c.framework}</span>
-              <span class="px-1.5 py-0.2 rounded text-[9px] font-bold ${c.severity === 'CRITICAL' ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/20 text-amber-300'}">${c.severity}</span>
-            </div>
-            <div class="text-[11px] text-slate-300 mt-1">${c.risk}</div>
+    if (compList) {
+      compList.innerHTML = '';
+      if (!data.compliance_impacts || data.compliance_impacts.length === 0) {
+        compList.innerHTML = `
+          <div class="p-2 rounded-lg bg-cyber-900 border border-cyber-800 text-slate-400 text-[11px] flex items-center gap-1.5">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+            <span>No regulatory thresholds breached. Operations within baseline compliance limits.</span>
           </div>
         `;
-      });
+      } else {
+        data.compliance_impacts.forEach(c => {
+          let badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
+          if (c.severity === 'CRITICAL') {
+            badgeColor = 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+          } else if (c.severity === 'HIGH') {
+            badgeColor = 'bg-orange-500/20 text-orange-300 border-orange-500/40';
+          } else if (c.severity === 'MEDIUM') {
+            badgeColor = 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+          } else if (c.severity === 'COMPLIANT' || c.severity === 'LOW') {
+            badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+          }
+
+          compList.innerHTML += `
+            <div class="p-2 rounded-lg bg-cyber-900 border border-cyber-800 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white font-mono text-[10px]">${c.framework}</span>
+                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border ${badgeColor}">${c.severity}</span>
+              </div>
+              <div class="text-[11px] text-slate-300">${c.risk}</div>
+              ${c.mandatory_notification ? `<div class="text-[10px] text-slate-400 font-mono flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3 text-cyan-400 shrink-0"></i> ${c.mandatory_notification}</div>` : ''}
+            </div>
+          `;
+        });
+      }
+      lucide.createIcons();
     }
 
     renderBlastRadiusSvg(data.graph);
@@ -1523,3 +1572,14 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 300);
   }, 3500);
 }
+
+// Window resize handler for responsive SVG topology re-centering
+let resizeDebounceTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeDebounceTimer);
+  resizeDebounceTimer = setTimeout(() => {
+    if (activeBlastRadiusData && activeBlastRadiusData.graph) {
+      renderBlastRadiusSvg(activeBlastRadiusData.graph);
+    }
+  }, 120);
+});

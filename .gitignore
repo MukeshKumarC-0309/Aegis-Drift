@@ -1,21 +1,61 @@
-# Python & Cache
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.pytest_cache/
-.coverage
-htmlcov/
 
-# Environments
+# C extensions
+*.dylib
+*.dll
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+*.zip
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+coverage.xml
+.hypothesis/
+.pytest_cache/
+
+# Environments & Secrets
+.env
+.env.*
+!.env.example
 .venv/
 env/
 venv/
 ENV/
+env.bak/
+venv.bak/
 
-# OS & IDE
+# OS artifacts
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 Thumbs.db
-.vscode/
+ehthumbs.db
+
+# IDEs & Editors
 .idea/
+.vscode/
 *.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Local logs & scratch
+*.log
+*.tmp
+node_modules/
+study/
+scratch/
