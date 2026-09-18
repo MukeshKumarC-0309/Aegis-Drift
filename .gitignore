@@ -58,5 +58,12 @@ Thumbs.db
 *.log
 scratch/
 
-# Auto-generated local development secret
+# Auto-generated local development state: signing key, pid, logs, certificates.
+# Matched at any depth — the application writes it under backend/ while the
+# launcher uses the repository root, and neither must ever be committed.
 .aegisdrift/
+**/.aegisdrift/
+.silentshift/
+**/.silentshift/
+*secret*.key
+*-key.pem
