@@ -1,0 +1,24 @@
+# Development overlay: hot reload, SQLite by default, no nginx.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+name: silentshift-dev
+
+services:
+  api:
+    build:
+      context: .
+      target: runtime
+    environment:
+      ENVIRONMENT: local
+      LOG_FORMAT: console
+      LOG_LEVEL: DEBUG
+      DEBUG: "true"
+      DB_ECHO: "false"
+    volumes:
+      # Bind-mount the source so an edit restarts the reloader.
+      - ./backend:/app/backend
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0 --port 8000 --reload --reload-dir /app/backend/app
+
+  nginx:
+    profiles: ["disabled"]

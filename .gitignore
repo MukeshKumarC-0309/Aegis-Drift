@@ -1,61 +1,62 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
-# C extensions
-*.dylib
-*.dll
-
-# Distribution / packaging
 build/
 dist/
 *.egg-info/
 *.egg
-*.zip
 
-# Unit test / coverage reports
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+ss-venv/
+
+# Testing and coverage
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 htmlcov/
-.tox/
 .coverage
 .coverage.*
-.cache
 coverage.xml
-.hypothesis/
-.pytest_cache/
+*.sarif
 
-# Environments & Secrets
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Node
+node_modules/
+frontend/dist/
+.vite/
+*.tsbuildinfo
+
+# Secrets and local config
 .env
 .env.*
 !.env.example
-.venv/
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+deploy/nginx/certs/*
+!deploy/nginx/certs/.gitkeep
 
-# OS artifacts
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-Thumbs.db
-ehthumbs.db
-
-# IDEs & Editors
+# Editors
 .idea/
 .vscode/
 *.swp
 *.swo
-*.sublime-workspace
-*.sublime-project
 
-# Local logs & scratch
+# OS
+.DS_Store
+._*
+Thumbs.db
+
+# Logs and scratch
 *.log
-*.tmp
-node_modules/
-study/
 scratch/
+
+# Auto-generated local development secret
+.silentshift/

@@ -1,82 +1,325 @@
+"""SilentShift application factory and ASGI entrypoint."""
+
+from __future__ import annotations
+
 import os
+from contextlib import asynccontextmanager
+from pathlib import Path
+
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from app.api.routes import router as api_router
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-app = FastAPI(
-    title="SilentShift - Behavioral Security & Threat Transition Platform",
-    description="Context-Aware Behavioral Anomaly Detection & Threat Transition Analytics",
-    version="1.0.0"
+from app.api.v1.endpoints import health
+from app.api.v1.router import api_router
+from app.core.config import settings
+from app.core.exceptions import SilentShiftError
+from app.core.logging import configure_logging, get_logger
+from app.core.middleware import (
+    RateLimitMiddleware,
+    RequestContextMiddleware,
+    SecurityHeadersMiddleware,
 )
+from app.db.session import dispose_engine, init_models, session_scope
+from app.services.events import event_bus
+from app.workers.scheduler import scheduler
 
-# Enable CORS for local dev and cross-origin clients
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+configure_logging()
+logger = get_logger(__name__)
 
-# Include API routes
-app.include_router(api_router, prefix="/api")
+API_DESCRIPTION = """
+**SilentShift** is an Identity Threat Detection & Response (ITDR) platform. It detects
+low-and-slow account compromise and insider risk that per-event rules structurally
+cannot see.
 
-# Determine frontend directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
-frontend_dir = os.path.abspath(os.path.join(current_dir, "..", "..", "frontend"))
+### How it works
 
-if os.path.exists(frontend_dir):
-    app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
+1. **Baselines** — each identity's own circadian rhythm, resource surface, privilege
+   habits, network origins and data volume are learned from history.
+2. **Eight-vector scoring** — every event is scored independently on temporal,
+   resource, privilege, peer-divergence, geo-velocity, volume, device and threat-intel
+   dimensions.
+3. **Sequence correlation** — a leaky risk accumulator with exponential decay turns a
+   *trajectory* of small deviations into a state transition. Unbroken anomaly streaks
+   compound; isolated noise decays away.
+4. **Context-aware damping** — approved change tickets, on-call rotations and role
+   transfers suppress the false positives that cause alert fatigue. Evidence-destroying
+   actions can never be suppressed, by any approval.
+5. **Explainable verdicts** — every score is traceable to specific events, with the
+   arguments *against* the verdict stated explicitly.
 
-    @app.get("/")
-    async def serve_index():
-        index_file = os.path.join(frontend_dir, "index.html")
-        if os.path.exists(index_file):
-            return FileResponse(index_file)
-        return {"message": "Frontend index.html not found yet."}
+### Authentication
 
-    @app.get("/404", include_in_schema=False)
-    async def serve_404():
-        page_404 = os.path.join(frontend_dir, "404.html")
-        if os.path.exists(page_404):
-            return FileResponse(page_404, status_code=404)
-        return JSONResponse(status_code=404, content={"error": "404 page not found"})
+Most endpoints require `Authorization: Bearer <access token>` from `POST /api/v1/auth/login`.
+Telemetry ingest additionally accepts an `X-API-Key` header for machine clients.
 
-    @app.get("/favicon.ico", include_in_schema=False)
-    async def favicon():
-        ico_file = os.path.join(frontend_dir, "favicon.ico")
-        if os.path.exists(ico_file):
-            return FileResponse(ico_file, media_type="image/x-icon")
-        svg_file = os.path.join(frontend_dir, "favicon.svg")
-        if os.path.exists(svg_file):
-            return FileResponse(svg_file, media_type="image/svg+xml")
-        return JSONResponse(status_code=404, content={"message": "Favicon not found"})
-else:
-    @app.get("/")
-    async def root():
-        return {"message": "SilentShift API is running. Frontend directory not found."}
+Roles, in ascending order: `viewer` → `analyst` → `responder` → `admin`.
+"""
 
-
-@app.get("/health")
-def health():
-    return {"status": "healthy", "service": "SilentShift-Analytics"}
+TAGS_METADATA = [
+    {"name": "Authentication", "description": "Sign-in, tokens, operators and API keys."},
+    {"name": "Identities", "description": "The monitored estate and per-identity investigation."},
+    {"name": "Alerts", "description": "The triage queue and alert disposition."},
+    {"name": "Cases", "description": "Investigations, timelines and SLA tracking."},
+    {"name": "Telemetry", "description": "Event ingestion and the raw event stream."},
+    {"name": "Context Registry", "description": "Approved business justifications that damp risk."},
+    {"name": "Detection Rules", "description": "Declarative rule authoring, testing and tuning."},
+    {"name": "Response", "description": "Containment actions and SOAR playbooks."},
+    {"name": "Analytics", "description": "Dashboards, executive metrics and engine tuning."},
+    {"name": "Catalogue", "description": "Protected assets and threat-intel indicators."},
+    {"name": "Simulator", "description": "Reproducible attack scenarios and estate reset."},
+    {"name": "Forensic Export", "description": "Dossiers and evidence exports for incident records."},
+    {"name": "Live Stream", "description": "WebSocket feed of scoring and response events."},
+    {"name": "Health", "description": "Probes and Prometheus metrics."},
+]
 
 
-@app.exception_handler(StarletteHTTPException)
-async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
-    if exc.status_code == 404:
-        if request.url.path.startswith("/api"):
-            return JSONResponse(
-                status_code=404,
-                content={"error": "API route not found", "path": request.url.path, "status": 404}
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info(
+        "app.starting",
+        version=settings.VERSION,
+        environment=settings.ENVIRONMENT,
+        database="sqlite" if settings.is_sqlite else "postgresql",
+    )
+
+    await init_models()
+    await event_bus.start()
+
+    seeded = False
+    if settings.AUTO_SEED:
+        from app.db.seed import seed_all
+
+        async with session_scope() as db:
+            created = await seed_all(db)
+        if any(created.values()):
+            seeded = True
+            logger.info("app.seeded", **created)
+
+    await scheduler.start()
+    logger.info("app.ready", docs=settings.docs_url or "disabled")
+    _print_welcome(seeded)
+
+    yield
+
+    await scheduler.stop()
+    await event_bus.stop()
+    await dispose_engine()
+    logger.info("app.stopped")
+
+
+def _print_welcome(seeded: bool) -> None:
+    """Print where to go and how to sign in.
+
+    Written straight to stdout rather than through the logger: this is addressed to
+    a person watching a terminal, not to a log aggregator, and it should stay
+    readable when LOG_FORMAT is json.
+    """
+    if settings.is_production:
+        return
+
+    port = settings.PORT
+    url = f"http://localhost:{port}"
+    lines = [
+        "",
+        "  ┌─────────────────────────────────────────────────────────────┐",
+        "  │  SilentShift is running                                     │",
+        "  └─────────────────────────────────────────────────────────────┘",
+        "",
+        f"    Console    {url}",
+        f"    API docs   {url}/docs",
+        "",
+        "    Sign in with any of:",
+        "      admin@silentshift.io      ChangeMe_S1lentShift!   (full access)",
+        "      analyst@silentshift.io    AnalystDemo_2026!       (triage, cases)",
+        "      viewer@silentshift.io     ViewerDemo_2026!        (read only)",
+        "",
+    ]
+    if seeded:
+        lines += [
+            "    A demonstration estate has been created: 24 identities with",
+            "    learned behavioural baselines. Open Threat Simulator and press",
+            "    'Run all scenarios' to watch the detection engine work.",
+            "",
+        ]
+    print("\n".join(lines), flush=True)
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title=settings.PROJECT_NAME,
+        description=API_DESCRIPTION,
+        version=settings.VERSION,
+        openapi_tags=TAGS_METADATA,
+        docs_url=settings.docs_url,
+        redoc_url="/redoc" if not settings.is_production else None,
+        openapi_url="/openapi.json" if not settings.is_production else None,
+        lifespan=lifespan,
+        contact={"name": "SilentShift Engineering", "url": "https://github.com/"},
+        license_info={"name": "Apache 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0"},
+    )
+
+    # Middleware executes bottom-up: context (outermost) → security → rate limit → gzip.
+    app.add_middleware(GZipMiddleware, minimum_size=1024)
+    if settings.RATE_LIMIT_ENABLED:
+        app.add_middleware(
+            RateLimitMiddleware,
+            requests=settings.RATE_LIMIT_REQUESTS,
+            window_seconds=settings.RATE_LIMIT_WINDOW_SECONDS,
+            ingest_requests=settings.RATE_LIMIT_INGEST_REQUESTS,
+        )
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["X-Request-ID", "X-Response-Time-Ms", "X-RateLimit-Remaining"],
+    )
+    if settings.TRUSTED_HOSTS != ["*"]:
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.TRUSTED_HOSTS)
+    app.add_middleware(RequestContextMiddleware)
+
+    app.include_router(health.router)
+    app.include_router(api_router, prefix=settings.API_V1_PREFIX)
+
+    _register_exception_handlers(app)
+    _mount_frontend(app)
+    return app
+
+
+def _register_exception_handlers(app: FastAPI) -> None:
+    @app.exception_handler(SilentShiftError)
+    async def _domain_error(_: Request, exc: SilentShiftError) -> JSONResponse:
+        return JSONResponse(status_code=exc.status_code, content=exc.to_dict())
+
+    @app.exception_handler(RequestValidationError)
+    async def _validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": {
+                    "code": "validation_error",
+                    "message": "The request payload failed validation.",
+                    "details": {
+                        "fields": [
+                            {
+                                "location": " → ".join(str(p) for p in err["loc"]),
+                                "message": err["msg"],
+                                "type": err["type"],
+                            }
+                            for err in exc.errors()
+                        ]
+                    },
+                }
+            },
+        )
+
+    @app.exception_handler(StarletteHTTPException)
+    async def _http_error(request: Request, exc: StarletteHTTPException) -> JSONResponse | FileResponse:
+        if exc.status_code == 404 and not request.url.path.startswith(("/api", "/health", "/metrics")):
+            spa = _frontend_dir() / "index.html"
+            if spa.exists():
+                # Client-side routing: hand unknown paths to the SPA.
+                return FileResponse(spa)
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={
+                "error": {
+                    "code": f"http_{exc.status_code}",
+                    "message": exc.detail if isinstance(exc.detail, str) else "Request failed.",
+                }
+            },
+        )
+
+    @app.exception_handler(Exception)
+    async def _unhandled(request: Request, exc: Exception) -> JSONResponse:
+        logger.exception("unhandled_exception", path=request.url.path, error=str(exc))
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": {
+                    "code": "internal_error",
+                    "message": (
+                        str(exc)
+                        if settings.DEBUG
+                        else "An unexpected error occurred. The incident has been logged."
+                    ),
+                    "details": {"request_id": getattr(request.state, "request_id", None)},
+                }
+            },
+        )
+
+
+def _frontend_dir() -> Path:
+    base = Path(__file__).resolve().parent.parent
+    return (base / settings.FRONTEND_DIST_DIR).resolve()
+
+
+def _mount_frontend(app: FastAPI) -> None:
+    """Serve the built SPA when present. In development the Vite dev server owns this."""
+    if not settings.SERVE_FRONTEND:
+        return
+    dist = _frontend_dir()
+    if not (dist / "index.html").exists():
+        logger.info("frontend.not_built", expected=str(dist))
+
+        @app.get("/", include_in_schema=False)
+        async def _api_only() -> dict:
+            return {
+                "service": settings.PROJECT_NAME,
+                "version": settings.VERSION,
+                "message": "API is running. The console has not been built.",
+                "build_hint": "cd frontend && npm install && npm run build",
+                "docs": settings.docs_url,
+            }
+
+        return
+
+    assets = dist / "assets"
+    if assets.is_dir():
+        app.mount("/assets", StaticFiles(directory=assets), name="assets")
+
+    @app.get("/", include_in_schema=False)
+    async def _spa_root() -> FileResponse:
+        return FileResponse(dist / "index.html")
+
+    for filename in ("favicon.svg", "favicon.ico", "robots.txt", "manifest.webmanifest"):
+        path = dist / filename
+        if path.exists():
+            app.add_api_route(
+                f"/{filename}",
+                _static_file_route(path),
+                methods=["GET"],
+                include_in_schema=False,
             )
-        page_404 = os.path.join(frontend_dir, "404.html")
-        if os.path.exists(page_404):
-            return FileResponse(page_404, status_code=404)
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail}
+
+    logger.info("frontend.mounted", dist=str(dist))
+
+
+def _static_file_route(path: Path):
+    async def _serve() -> FileResponse:
+        return FileResponse(path)
+
+    return _serve
+
+
+app = create_app()
+
+
+if __name__ == "__main__":  # pragma: no cover
+    import uvicorn
+
+    uvicorn.run(
+        "app.main:app",
+        host=settings.HOST,
+        port=settings.PORT,
+        reload=os.getenv("RELOAD", "").lower() in {"1", "true", "yes"},
+        log_config=None,
     )

@@ -1,85 +1,115 @@
-from typing import List, Dict, Optional, Tuple
-from datetime import datetime
-from app.models import SecurityEvent, ContextRecord
+"""Context-aware damping: suppress alerts that an approved business reason explains.
+
+The hard guarantee this module provides is the *anti-tamper floor*: destructive or
+evidence-destroying actions are never damped, no matter how broad the approval.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from app.core.enums import ANTI_TAMPER_ACTIONS
+from app.engine.types import ContextView, EventView
+
+#: A damping factor is clamped into this band; nothing is ever fully silenced.
+MIN_DAMPING_FACTOR = 0.10
+MAX_DAMPING_FACTOR = 0.95
+
+#: Damped scores never fall below this — a damped signal stays visible in trends.
+RISK_FLOOR = 4.0
 
 
-class ContextAwareEngine:
-    """
-    Context-Aware Damping & False Positive Suppression Engine:
-    Validates anomalous activities against legitimate business contexts:
-    - Approved change management tickets (e.g. ServiceNow, Jira)
-    - Role / Department transfers & onboarding transitions
-    - Scheduled maintenance windows
-    - On-call rotations & emergency escalation duty
-    - Approved travel or remote work exemptions
-    """
+@dataclass(slots=True)
+class DampingDecision:
+    score: float
+    is_damped: bool
+    reason: str | None
+    context_id: str | None
+    anti_tamper: bool = False
 
-    def __init__(self):
-        self.context_records: Dict[str, List[ContextRecord]] = {}
 
-    def register_context(self, record: ContextRecord):
-        if record.user_id not in self.context_records:
-            self.context_records[record.user_id] = []
-        self.context_records[record.user_id].append(record)
+class ContextEngine:
+    """Decides whether an approved context legitimises an anomalous event."""
 
-    def get_user_contexts(self, user_id: str) -> List[ContextRecord]:
-        return self.context_records.get(user_id, [])
+    def evaluate(
+        self,
+        event: EventView,
+        raw_score: float,
+        contexts: list[ContextView],
+    ) -> DampingDecision:
+        # 1. Anti-tamper floor — checked before anything else, and unconditional.
+        if event.action_key in ANTI_TAMPER_ACTIONS:
+            return DampingDecision(
+                score=raw_score,
+                is_damped=False,
+                reason=(
+                    f"Anti-tamper override: '{event.action}' destroys or disables audit "
+                    f"evidence and is exempt from all contextual damping."
+                ),
+                context_id=None,
+                anti_tamper=True,
+            )
 
-    def evaluate_context(self, event: SecurityEvent, raw_risk_score: float) -> Tuple[float, bool, Optional[str], Optional[ContextRecord]]:
-        """
-        Determines if an event matches an active legitimate context.
-        Only dampens if:
-        1. Context window is currently active.
-        2. AND either:
-           - The resource matches target_resources defined in the ticket
-           - OR an explicit event context tag matches the ticket reference
-           - OR target_resources was empty (broad department role reassignment)
-        Crucially, malicious out-of-scope actions (e.g., deleting audit logs, tampering with IAM)
-        are NOT damped even if an on-call rotation exists.
-        """
-        records = self.context_records.get(event.user_id, [])
+        active = [c for c in contexts if c.covers(event.occurred_at)]
+        if not active:
+            return DampingDecision(raw_score, False, None, None)
 
-        # Check explicit event tags first
-        for tag in event.context_tags:
-            if tag.startswith("ticket:") or tag.startswith("jira:"):
-                damping_factor = 0.35
-                damped_score = max(5.0, raw_risk_score * damping_factor)
-                return damped_score, True, f"Damped by verified event authorization tag: {tag}", None
-
-        if not records:
-            return raw_risk_score, False, None, None
-
-        ev_time = event.timestamp
-        for rec in records:
-            if not rec.active:
+        # 2. Prefer the most specific match: resource-scoped beats a blanket approval.
+        best: tuple[int, ContextView] | None = None
+        for ctx in active:
+            specificity = self._match_specificity(event, ctx)
+            if specificity == 0:
                 continue
+            if best is None or specificity > best[0]:
+                best = (specificity, ctx)
 
-            # Check validity window
-            if rec.valid_from <= ev_time <= rec.valid_until:
-                # Disallow damping for blatant destructive/tampering actions regardless of context
-                if event.action in ["delete_audit_logs", "dump_credentials"]:
-                    continue
+        if best is None:
+            return DampingDecision(raw_score, False, None, None)
 
-                # Check if resource matches the scoped target resources
-                resource_matches = False
-                if not rec.target_resources:
-                    # Broad project transfer without asset lock
-                    resource_matches = True
-                else:
-                    for tgt in rec.target_resources:
-                        if tgt.lower() in event.resource.lower() or event.resource.lower() in tgt.lower():
-                            resource_matches = True
-                            break
+        specificity, ctx = best
+        factor = min(MAX_DAMPING_FACTOR, max(MIN_DAMPING_FACTOR, ctx.damping_factor))
 
-                tag_matches = rec.ticket_reference and any(rec.ticket_reference.lower() in t.lower() for t in event.context_tags)
+        # A blanket (unscoped) approval damps less aggressively than a targeted one.
+        if specificity == 1:
+            factor = min(MAX_DAMPING_FACTOR, factor + 0.25)
 
-                if resource_matches or tag_matches:
-                    damped_score = max(5.0, raw_risk_score * rec.damping_factor)
-                    reason = (
-                        f"Risk score damped from {raw_risk_score:.1f} to {damped_score:.1f} via "
-                        f"{rec.context_type} [{rec.ticket_reference or rec.id}]: '{rec.description}' "
-                        f"(Approved by {rec.approved_by})"
-                    )
-                    return round(damped_score, 1), True, reason, rec
+        damped = max(RISK_FLOOR, raw_score * factor)
+        reason = (
+            f"Damped {raw_score:.1f} → {damped:.1f} (x{factor:.2f}) by {ctx.context_type} "
+            f'[{ctx.ticket_reference or ctx.id}] — "{ctx.title}", approved by {ctx.approved_by}.'
+        )
+        return DampingDecision(round(damped, 2), True, reason, ctx.id)
 
-        return raw_risk_score, False, None, None
+    @staticmethod
+    def _match_specificity(event: EventView, ctx: ContextView) -> int:
+        """0 = no match, 1 = blanket approval, 2 = resource match, 3 = explicit ticket tag."""
+        if ctx.ticket_reference:
+            ref = ctx.ticket_reference.lower()
+            if any(ref in tag.lower() for tag in event.context_tags):
+                return 3
+
+        if ctx.allowed_actions and event.action_key not in {a.lower() for a in ctx.allowed_actions}:
+            # The approval enumerates permitted actions and this is not one of them.
+            return 0
+
+        if ctx.target_resources:
+            resource = event.resource.lower()
+            for target in ctx.target_resources:
+                t = target.lower()
+                if t in resource or resource in t:
+                    return 2
+            return 0
+
+        return 1
+
+    @staticmethod
+    def coverage_summary(contexts: list[ContextView], moment) -> dict:
+        """Compact description of what is currently shielding an identity."""
+        active = [c for c in contexts if c.covers(moment)]
+        return {
+            "active_count": len(active),
+            "total_count": len(contexts),
+            "types": sorted({c.context_type for c in active}),
+            "tickets": [c.ticket_reference for c in active if c.ticket_reference],
+            "strongest_damping": min((c.damping_factor for c in active), default=1.0),
+        }

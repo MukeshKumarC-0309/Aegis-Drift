@@ -1,11 +1,100 @@
-version: '3.8'
+name: silentshift
 
 services:
-  silentshift:
-    build: .
-    container_name: silentshift-platform
-    ports:
-      - "8000:8000"
+  postgres:
+    image: postgres:16-alpine
+    container_name: silentshift-postgres
     environment:
-      - PYTHONUNBUFFERED=1
+      POSTGRES_USER: ${POSTGRES_USER:-silentshift}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-silentshift}
+      POSTGRES_DB: ${POSTGRES_DB:-silentshift}
+      # Deterministic collation keeps index behaviour identical across hosts.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./deploy/postgres/init.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-silentshift} -d ${POSTGRES_DB:-silentshift}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     restart: unless-stopped
+    networks: [silentshift]
+
+  redis:
+    image: redis:7-alpine
+    container_name: silentshift-redis
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    networks: [silentshift]
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: silentshift:${TAG:-latest}
+    container_name: silentshift-api
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-local}
+      LOG_FORMAT: json
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      # Defaults let `docker compose up` work with no configuration at all.
+      # ENVIRONMENT stays at "local" unless you override it — and the application
+      # refuses to boot in production with these placeholder values still in place,
+      # so a real deployment cannot accidentally inherit them.
+      # Generate one with: python -c "import secrets; print(secrets.token_urlsafe(48))"
+      SECRET_KEY: ${SECRET_KEY:-local-compose-development-key-not-for-production-use}
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-silentshift}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-silentshift}
+      POSTGRES_DB: ${POSTGRES_DB:-silentshift}
+      REDIS_URL: redis://redis:6379/0
+      FIRST_SUPERUSER_EMAIL: ${FIRST_SUPERUSER_EMAIL:-admin@silentshift.io}
+      FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD:-ChangeMe_S1lentShift!}
+      AUTO_SEED: ${AUTO_SEED:-true}
+      WORKERS: ${WORKERS:-2}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://localhost:8080}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    restart: unless-stopped
+    networks: [silentshift]
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: silentshift-nginx
+    depends_on:
+      - api
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/nginx/certs:/etc/nginx/certs:ro
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks: [silentshift]
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  silentshift:
+    driver: bridge
