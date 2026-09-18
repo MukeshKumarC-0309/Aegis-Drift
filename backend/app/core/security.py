@@ -18,7 +18,7 @@ from app.core.exceptions import AuthenticationError
 
 _pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
-API_KEY_PREFIX = "ss_live_"
+API_KEY_PREFIX = "ad_live_"
 
 
 class Role(StrEnum):

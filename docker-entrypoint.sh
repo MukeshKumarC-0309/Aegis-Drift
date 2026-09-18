@@ -43,7 +43,7 @@ case "${1:-serve}" in
   serve)
     wait_for_database
     migrate
-    echo "[entrypoint] starting SilentShift on ${HOST:-0.0.0.0}:${PORT:-8000}"
+    echo "[entrypoint] starting Aegis Drift on ${HOST:-0.0.0.0}:${PORT:-8000}"
     # Uvicorn workers under Gunicorn: process supervision plus an async worker class.
     exec gunicorn app.main:app \
       --worker-class uvicorn.workers.UvicornWorker \

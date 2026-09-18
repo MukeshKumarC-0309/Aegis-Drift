@@ -3,8 +3,8 @@
 ## Setup
 
 ```bash
-git clone https://github.com/MukeshKumarC-0309/SilentShift.git
-cd SilentShift
+git clone https://github.com/MukeshKumarC-0309/Aegis-Drift.git
+cd Aegis Drift
 make setup
 make dev
 ```

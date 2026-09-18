@@ -18,7 +18,7 @@ from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
-CHANNEL = "silentshift:events"
+CHANNEL = "aegisdrift:events"
 
 #: Slow consumers are dropped rather than allowed to stall the publisher.
 SUBSCRIBER_QUEUE_SIZE = 256

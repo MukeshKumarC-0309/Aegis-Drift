@@ -1,4 +1,4 @@
-/** Types mirroring the SilentShift REST API. */
+/** Types mirroring the Aegis Drift REST API. */
 
 export type TransitionState = 'STABLE' | 'EARLY_DRIFT' | 'ESCALATING' | 'CRITICAL_TRANSITION'
 export type Severity = 'INFO' | 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'

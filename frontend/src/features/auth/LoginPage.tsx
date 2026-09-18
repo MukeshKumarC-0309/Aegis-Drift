@@ -7,10 +7,10 @@ import { IconShield } from '@/components/ui/icons'
 
 /** Seeded demo operators, surfaced so an evaluator can see the RBAC tiers work. */
 const DEMO_ACCOUNTS = [
-  { role: 'Administrator', email: 'admin@silentshift.io', password: 'ChangeMe_S1lentShift!', can: 'Everything, including engine tuning and estate reset' },
-  { role: 'Analyst', email: 'analyst@silentshift.io', password: 'AnalystDemo_2026!', can: 'Triage, cases, rules and context records' },
-  { role: 'Responder', email: 'responder@silentshift.io', password: 'ResponderDemo_2026!', can: 'Everything an analyst can do, plus containment actions' },
-  { role: 'Viewer', email: 'viewer@silentshift.io', password: 'ViewerDemo_2026!', can: 'Read-only across the console' },
+  { role: 'Administrator', email: 'admin@aegisdrift.com', password: 'ChangeMe_Aeg1sDrift!', can: 'Everything, including engine tuning and estate reset' },
+  { role: 'Analyst', email: 'analyst@aegisdrift.com', password: 'AnalystDemo_2026!', can: 'Triage, cases, rules and context records' },
+  { role: 'Responder', email: 'responder@aegisdrift.com', password: 'ResponderDemo_2026!', can: 'Everything an analyst can do, plus containment actions' },
+  { role: 'Viewer', email: 'viewer@aegisdrift.com', password: 'ViewerDemo_2026!', can: 'Read-only across the console' },
 ]
 
 export function LoginPage() {
@@ -53,7 +53,7 @@ export function LoginPage() {
             <IconShield className="size-5 text-white" />
           </div>
           <div>
-            <p className="font-semibold tracking-tight">SilentShift</p>
+            <p className="font-semibold tracking-tight">Aegis Drift</p>
             <p className="text-[11px] tracking-wider text-[--color-ink-faint] uppercase">
               Identity Threat Detection &amp; Response
             </p>
@@ -69,7 +69,7 @@ export function LoginPage() {
             per-event threshold you have. Only the <em>sequence</em> gives it away.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-[--color-ink-muted]">
-            SilentShift learns what normal looks like for each identity, scores every event on eight
+            Aegis Drift learns what normal looks like for each identity, scores every event on eight
             behavioural dimensions, and accumulates that signal over time with exponential decay — so
             sustained drift compounds while isolated noise fades.
           </p>
@@ -101,7 +101,7 @@ export function LoginPage() {
             <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-600">
               <IconShield className="size-5 text-white" />
             </div>
-            <h1 className="text-lg font-semibold">SilentShift</h1>
+            <h1 className="text-lg font-semibold">Aegis Drift</h1>
             <p className="text-xs text-[--color-ink-muted]">Identity Threat Detection &amp; Response</p>
           </div>
 

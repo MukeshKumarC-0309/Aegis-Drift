@@ -1,12 +1,12 @@
 <div align="center">
 
-# SilentShift
+# Aegis Drift
 
 **Identity Threat Detection & Response**
 
 Catching the account compromise that behaves normally for six weeks and then drifts.
 
-[![CI](https://github.com/MukeshKumarC-0309/SilentShift/actions/workflows/ci.yml/badge.svg)](https://github.com/MukeshKumarC-0309/SilentShift/actions/workflows/ci.yml)
+[![CI](https://github.com/MukeshKumarC-0309/Aegis-Drift/actions/workflows/ci.yml/badge.svg)](https://github.com/MukeshKumarC-0309/Aegis-Drift/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![React 19](https://img.shields.io/badge/react-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
@@ -25,7 +25,7 @@ Meanwhile the rules you *do* have fire constantly on people who changed teams, j
 rotation, or were handed a migration project last Tuesday. Analysts stop reading the queue, and the
 one alert that mattered scrolls past at 3 a.m.
 
-SilentShift is built around both halves of that problem: **accumulate weak signals over time**, and
+Aegis Drift is built around both halves of that problem: **accumulate weak signals over time**, and
 **suppress the ones a business reason already explains** — with a hard floor that no approval can
 cross.
 
@@ -100,7 +100,7 @@ just not the console, and the script tells you so rather than failing.
 |---|---|
 | `./start.sh` | Install what is missing, then start |
 | `./start.sh dev` | Same, with hot reload on both backend and console |
-| `./start.sh secure` | Serve at `https://silentshift.local` with a trusted certificate |
+| `./start.sh secure` | Serve at `https://aegisdrift.local` with a trusted certificate |
 | `./start.sh docker` | Run the full stack (Postgres, Redis, nginx) in containers |
 | `./start.sh stop` | Stop whatever is running |
 | `./start.sh reset` | Wipe local data and start fresh |
@@ -115,7 +115,7 @@ just not the console, and the script tells you so rather than failing.
 ./start.sh secure
 ```
 
-Gives you **`https://silentshift.local:8443`** with a real padlock and no browser warning.
+Gives you **`https://aegisdrift.local:8443`** with a real padlock and no browser warning.
 
 It installs [mkcert](https://github.com/FiloSottile/mkcert), creates a development certificate
 authority, issues a certificate for the hostname, and adds one line to `/etc/hosts`. Two of those
@@ -137,10 +137,10 @@ The script prints these when it finishes:
 
 | Role | Email | Password | Can do |
 |---|---|---|---|
-| Admin | `admin@silentshift.io` | `ChangeMe_S1lentShift!` | Everything, including engine tuning and estate reset |
-| Responder | `responder@silentshift.io` | `ResponderDemo_2026!` | Analyst permissions plus containment actions |
-| Analyst | `analyst@silentshift.io` | `AnalystDemo_2026!` | Triage, cases, rules, context records |
-| Viewer | `viewer@silentshift.io` | `ViewerDemo_2026!` | Read-only |
+| Admin | `admin@aegisdrift.com` | `ChangeMe_Aeg1sDrift!` | Everything, including engine tuning and estate reset |
+| Responder | `responder@aegisdrift.com` | `ResponderDemo_2026!` | Analyst permissions plus containment actions |
+| Analyst | `analyst@aegisdrift.com` | `AnalystDemo_2026!` | Triage, cases, rules, context records |
+| Viewer | `viewer@aegisdrift.com` | `ViewerDemo_2026!` | Read-only |
 
 ### Running it for real
 
@@ -175,7 +175,7 @@ python scripts/smoke_test.py http://localhost:8000
 ## Architecture
 
 ```
-SilentShift/
+Aegis-Drift/
 ├── backend/
 │   ├── app/
 │   │   ├── core/            config, logging, security, middleware, metrics, enums

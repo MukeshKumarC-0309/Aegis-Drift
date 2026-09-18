@@ -1,6 +1,6 @@
 # Development overlay: hot reload, SQLite by default, no nginx.
 #   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
-name: silentshift-dev
+name: aegisdrift-dev
 
 services:
   api:

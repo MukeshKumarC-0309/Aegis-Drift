@@ -11,8 +11,8 @@ import type { Page, TokenPair } from '@/types/api'
 const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 const API = `${BASE}/api/v1`
 
-const ACCESS_KEY = 'silentshift.access'
-const REFRESH_KEY = 'silentshift.refresh'
+const ACCESS_KEY = 'aegisdrift.access'
+const REFRESH_KEY = 'aegisdrift.refresh'
 
 export class ApiError extends Error {
   constructor(

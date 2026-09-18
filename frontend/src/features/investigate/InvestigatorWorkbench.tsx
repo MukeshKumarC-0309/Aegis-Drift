@@ -47,7 +47,7 @@ export function InvestigatorWorkbench() {
     try {
       await downloadText(
         `/export/identities/${identity.id}/dossier.md`,
-        `silentshift-dossier-${identity.username}.md`,
+        `aegisdrift-dossier-${identity.username}.md`,
       )
     } finally {
       setExporting(false)

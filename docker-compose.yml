@@ -1,29 +1,29 @@
-name: silentshift
+name: aegisdrift
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: silentshift-postgres
+    container_name: aegisdrift-postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-silentshift}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-silentshift}
-      POSTGRES_DB: ${POSTGRES_DB:-silentshift}
+      POSTGRES_USER: ${POSTGRES_USER:-aegisdrift}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aegisdrift}
+      POSTGRES_DB: ${POSTGRES_DB:-aegisdrift}
       # Deterministic collation keeps index behaviour identical across hosts.
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./deploy/postgres/init.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-silentshift} -d ${POSTGRES_DB:-silentshift}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aegisdrift} -d ${POSTGRES_DB:-aegisdrift}"]
       interval: 5s
       timeout: 5s
       retries: 12
     restart: unless-stopped
-    networks: [silentshift]
+    networks: [aegisdrift]
 
   redis:
     image: redis:7-alpine
-    container_name: silentshift-redis
+    container_name: aegisdrift-redis
     command: >
       redis-server
       --appendonly yes
@@ -37,14 +37,14 @@ services:
       timeout: 3s
       retries: 10
     restart: unless-stopped
-    networks: [silentshift]
+    networks: [aegisdrift]
 
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    image: silentshift:${TAG:-latest}
-    container_name: silentshift-api
+    image: aegisdrift:${TAG:-latest}
+    container_name: aegisdrift-api
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -59,23 +59,23 @@ services:
       # Generate one with: python -c "import secrets; print(secrets.token_urlsafe(48))"
       SECRET_KEY: ${SECRET_KEY:-local-compose-development-key-not-for-production-use}
       POSTGRES_HOST: postgres
-      POSTGRES_USER: ${POSTGRES_USER:-silentshift}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-silentshift}
-      POSTGRES_DB: ${POSTGRES_DB:-silentshift}
+      POSTGRES_USER: ${POSTGRES_USER:-aegisdrift}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aegisdrift}
+      POSTGRES_DB: ${POSTGRES_DB:-aegisdrift}
       REDIS_URL: redis://redis:6379/0
-      FIRST_SUPERUSER_EMAIL: ${FIRST_SUPERUSER_EMAIL:-admin@silentshift.io}
-      FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD:-ChangeMe_S1lentShift!}
+      FIRST_SUPERUSER_EMAIL: ${FIRST_SUPERUSER_EMAIL:-admin@aegisdrift.com}
+      FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD:-ChangeMe_Aeg1sDrift!}
       AUTO_SEED: ${AUTO_SEED:-true}
       WORKERS: ${WORKERS:-2}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://localhost:8080}
     ports:
       - "${API_PORT:-8000}:8000"
     restart: unless-stopped
-    networks: [silentshift]
+    networks: [aegisdrift]
 
   nginx:
     image: nginx:1.27-alpine
-    container_name: silentshift-nginx
+    container_name: aegisdrift-nginx
     depends_on:
       - api
     volumes:
@@ -89,12 +89,12 @@ services:
       timeout: 5s
       retries: 3
     restart: unless-stopped
-    networks: [silentshift]
+    networks: [aegisdrift]
 
 volumes:
   postgres-data:
   redis-data:
 
 networks:
-  silentshift:
+  aegisdrift:
     driver: bridge

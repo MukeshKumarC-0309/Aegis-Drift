@@ -203,9 +203,9 @@ class TestDatabaseUrl:
             POSTGRES_HOST="db.internal",
             POSTGRES_USER="ss",
             POSTGRES_PASSWORD="pw",
-            POSTGRES_DB="silentshift",
+            POSTGRES_DB="aegisdrift",
         )
-        assert settings.sqlalchemy_uri == "postgresql+asyncpg://ss:pw@db.internal:5432/silentshift"
+        assert settings.sqlalchemy_uri == "postgresql+asyncpg://ss:pw@db.internal:5432/aegisdrift"
         assert settings.is_sqlite is False
 
     def test_explicit_url_wins_and_is_upgraded_to_async(self):

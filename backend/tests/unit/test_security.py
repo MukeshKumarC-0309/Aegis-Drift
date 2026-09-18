@@ -101,7 +101,7 @@ class TestApiKeys:
     def test_generated_key_verifies_against_its_hash(self):
         raw, hashed, prefix = generate_api_key()
 
-        assert raw.startswith("ss_live_")
+        assert raw.startswith("ad_live_")
         assert prefix == raw[: len(prefix)]
         assert raw != hashed
         assert verify_api_key(raw, hashed)

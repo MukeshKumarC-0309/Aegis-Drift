@@ -2,7 +2,7 @@
 
 ## Threat model
 
-SilentShift holds behavioural telemetry about employees and the classification of an organisation's
+Aegis Drift holds behavioural telemetry about employees and the classification of an organisation's
 most sensitive assets. A compromise of this system would hand an attacker both a map of what is
 worth stealing and the ability to hide their own drift.
 
@@ -33,7 +33,7 @@ than per-handler checks, so a new endpoint cannot accidentally ship unguarded. E
 (quarantine, disable, revoke) require `responder`; engine tuning and estate reset require `admin`.
 
 ### Machine credentials
-API keys are `ss_live_` + 256 bits of entropy, stored only as SHA-256, compared with
+API keys are `ad_live_` + 256 bits of entropy, stored only as SHA-256, compared with
 `hmac.compare_digest`, returned to the operator exactly once. They carry scopes, optional expiry,
 and usage counters, and can be revoked immediately.
 

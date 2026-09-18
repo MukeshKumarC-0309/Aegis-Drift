@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# SilentShift — one command to run the whole thing.
+# Aegis Drift — one command to run the whole thing.
 #
 #   ./start.sh            install what is missing, then start
 #   ./start.sh dev        same, but with hot reload for the console
@@ -19,7 +19,7 @@ VENV="$ROOT/.venv"
 PY="$VENV/bin/python"
 BACKEND="$ROOT/backend"
 FRONTEND="$ROOT/frontend"
-STATE="$ROOT/.silentshift"
+STATE="$ROOT/.aegisdrift"
 PIDFILE="$STATE/api.pid"
 PORTFILE="$STATE/api.port"
 LOGFILE="$STATE/api.log"
@@ -40,7 +40,7 @@ MIN_NODE_MAJOR=20
 # Local HTTPS. The hostname resolves via /etc/hosts and the certificate is issued
 # by a locally-trusted mkcert CA, so the browser shows a real padlock with no
 # warning. Nothing here is reachable from outside this machine.
-SITE_HOST="${SITE_HOST:-silentshift.local}"
+SITE_HOST="${SITE_HOST:-aegisdrift.local}"
 CERT_DIR="$STATE/certs"
 CERT_FILE="$CERT_DIR/$SITE_HOST.pem"
 KEY_FILE="$CERT_DIR/$SITE_HOST-key.pem"
@@ -60,7 +60,7 @@ warn() { printf "  ${YELLOW}!${R} %s\n" "$1"; }
 die()  { printf "\n  ${RED}✗ %s${R}\n\n" "$1" >&2; exit 1; }
 
 banner() {
-  printf "\n${B}  SilentShift${R} ${DIM}— identity threat detection & response${R}\n\n"
+  printf "\n${B}  Aegis Drift${R} ${DIM}— identity threat detection & response${R}\n\n"
 }
 
 # ------------------------------------------------------------------ preflight
@@ -215,9 +215,9 @@ print_secure_ready() {
   printf "  ${DIM}Resolves only on this machine. Nothing is exposed to the internet.${R}\n"
   printf "\n"
   printf "  ${B}Sign in${R}\n"
-  printf "    ${DIM}admin@silentshift.io${R}      ChangeMe_S1lentShift!   ${DIM}full access${R}\n"
-  printf "    ${DIM}analyst@silentshift.io${R}    AnalystDemo_2026!       ${DIM}triage and cases${R}\n"
-  printf "    ${DIM}viewer@silentshift.io${R}     ViewerDemo_2026!        ${DIM}read only${R}\n"
+  printf "    ${DIM}admin@aegisdrift.com${R}      ChangeMe_Aeg1sDrift!   ${DIM}full access${R}\n"
+  printf "    ${DIM}analyst@aegisdrift.com${R}    AnalystDemo_2026!       ${DIM}triage and cases${R}\n"
+  printf "    ${DIM}viewer@aegisdrift.com${R}     ViewerDemo_2026!        ${DIM}read only${R}\n"
   printf "\n"
   printf "  ${DIM}Stop:${R}   ./start.sh stop\n\n"
 }
@@ -322,9 +322,9 @@ print_ready() {
   printf "  ${B}API docs${R}   ${DIM}%s/docs${R}\n" "$url"
   printf "\n"
   printf "  ${B}Sign in${R}\n"
-  printf "    ${DIM}admin@silentshift.io${R}      ChangeMe_S1lentShift!   ${DIM}full access${R}\n"
-  printf "    ${DIM}analyst@silentshift.io${R}    AnalystDemo_2026!       ${DIM}triage and cases${R}\n"
-  printf "    ${DIM}viewer@silentshift.io${R}     ViewerDemo_2026!        ${DIM}read only${R}\n"
+  printf "    ${DIM}admin@aegisdrift.com${R}      ChangeMe_Aeg1sDrift!   ${DIM}full access${R}\n"
+  printf "    ${DIM}analyst@aegisdrift.com${R}    AnalystDemo_2026!       ${DIM}triage and cases${R}\n"
+  printf "    ${DIM}viewer@aegisdrift.com${R}     ViewerDemo_2026!        ${DIM}read only${R}\n"
   printf "\n"
   printf "  ${DIM}Try it:${R} open ${B}Threat Simulator${R} and press ${B}Run all scenarios${R}.\n"
   printf "  ${DIM}Logs:${R}   %s\n" "${LOGFILE/#$ROOT\//}"
@@ -448,7 +448,7 @@ start_docker() {
 reset_data() {
   stop_server
   step "Removing local data…"
-  rm -f "$BACKEND/silentshift.db" "$LOGFILE"
+  rm -f "$BACKEND/aegisdrift.db" "$LOGFILE"
   ok "Local data cleared — the estate will be regenerated on next start"
 }
 

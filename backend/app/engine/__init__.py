@@ -1,4 +1,4 @@
-"""SilentShift detection engine.
+"""Aegis Drift detection engine.
 
 Pure, synchronous analytics with no database or framework dependencies. Layers:
 

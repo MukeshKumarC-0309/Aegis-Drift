@@ -1,4 +1,4 @@
-"""End-to-end smoke test against a running SilentShift API.
+"""End-to-end smoke test against a running Aegis Drift API.
 
 Exercises the whole stack through HTTP — auth, RBAC, ingestion, the detection
 engine, explainability, response and export — and asserts the product claims
@@ -14,7 +14,7 @@ import sys
 import urllib.error
 import urllib.request
 
-BASE = (sys.argv[1] if len(sys.argv) > 1 else os.environ.get("SILENTSHIFT_URL", "http://127.0.0.1:8000")).rstrip("/")
+BASE = (sys.argv[1] if len(sys.argv) > 1 else os.environ.get("AEGISDRIFT_URL", "http://127.0.0.1:8000")).rstrip("/")
 API = f"{BASE}/api/v1"
 token = None
 fails = []
@@ -45,10 +45,10 @@ def ok(label, cond, detail=""):
     if not cond:
         fails.append(label)
 
-print(f"\nSilentShift smoke test against {BASE}")
+print(f"\nAegis Drift smoke test against {BASE}")
 print("\n=== AUTH ===")
-ADMIN_EMAIL = os.environ.get("SILENTSHIFT_ADMIN_EMAIL", "admin@silentshift.io")
-ADMIN_PASSWORD = os.environ.get("SILENTSHIFT_ADMIN_PASSWORD", "ChangeMe_S1lentShift!")
+ADMIN_EMAIL = os.environ.get("AEGISDRIFT_ADMIN_EMAIL", "admin@aegisdrift.com")
+ADMIN_PASSWORD = os.environ.get("AEGISDRIFT_ADMIN_PASSWORD", "ChangeMe_Aeg1sDrift!")
 
 _, tok = call("POST", "/auth/login", {"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
 token = tok["access_token"] if isinstance(tok, dict) else None
@@ -145,7 +145,7 @@ if first:
     _, case = call("POST", "/cases", {"title": "E2E investigation", "priority": "P2",
                                       "severity": "HIGH", "alert_ids": [first["id"]],
                                       "primary_identity_id": first["identity_id"]})
-    ok("case opened with reference", case.get("reference", "").startswith("SS-"), case.get("reference"))
+    ok("case opened with reference", case.get("reference", "").startswith("AD-"), case.get("reference"))
     call("POST", f"/cases/{case['id']}/entries", {"body": "Reviewed the timeline."})
     _, detail = call("GET", f"/cases/{case['id']}")
     ok("case timeline records entries", len(detail["entries"]) >= 2, f"{len(detail['entries'])} entries")
@@ -209,7 +209,7 @@ print("\n=== HEALTH ===")
 code, h = call("GET", f"{BASE}/health")
 ok("health reports healthy", h["status"] == "healthy", str(h["checks"]))
 code, m = call("GET", f"{BASE}/metrics", raw=True)
-ok("prometheus metrics exposed", "silentshift_http_requests_total" in m)
+ok("prometheus metrics exposed", "aegisdrift_http_requests_total" in m)
 
 print("\n" + "=" * 70)
 if fails:

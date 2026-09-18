@@ -100,14 +100,14 @@ async def _seed_users(db: AsyncSession) -> int:
     # accounts and their default passwords are published in the README.
     if settings.seed_demo_accounts:
         accounts += [
-            ("analyst@silentshift.io", "Sam Okonkwo", Role.ANALYST, settings.DEMO_ANALYST_PASSWORD),
+            ("analyst@aegisdrift.com", "Sam Okonkwo", Role.ANALYST, settings.DEMO_ANALYST_PASSWORD),
             (
-                "responder@silentshift.io",
+                "responder@aegisdrift.com",
                 "Riley Nakamura",
                 Role.RESPONDER,
                 settings.DEMO_RESPONDER_PASSWORD,
             ),
-            ("viewer@silentshift.io", "Casey Brennan", Role.VIEWER, settings.DEMO_VIEWER_PASSWORD),
+            ("viewer@aegisdrift.com", "Casey Brennan", Role.VIEWER, settings.DEMO_VIEWER_PASSWORD),
         ]
     else:
         logger.info("seed.demo_accounts_skipped", reason="production or explicitly disabled")
@@ -239,7 +239,7 @@ async def _seed_identities(db: AsyncSession) -> int:
             Identity(
                 username=username,
                 display_name=display,
-                email=f"{username}@silentshift.io",
+                email=f"{username}@aegisdrift.com",
                 department=dept,
                 role_title=role,
                 manager=manager,

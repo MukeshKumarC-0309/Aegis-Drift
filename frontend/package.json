@@ -1,9 +1,9 @@
 {
-  "name": "silentshift-console",
+  "name": "aegisdrift-console",
   "private": true,
   "version": "2.0.0",
   "type": "module",
-  "description": "SilentShift ITDR operations console",
+  "description": "Aegis Drift ITDR operations console",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

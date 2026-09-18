@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 # ---------------------------------------------------------------------------
-# SilentShift — single production image.
+# Aegis Drift — single production image.
 #
 # Stage 1 builds the React console, stage 2 installs Python dependencies into a
 # virtualenv, and the runtime stage copies only those artefacts. The result runs
@@ -42,7 +42,7 @@ COPY backend/pyproject.toml backend/README.md ./
 RUN mkdir -p app && touch app/__init__.py \
  && pip install --upgrade pip setuptools wheel \
  && pip install . \
- && pip uninstall -y silentshift
+ && pip uninstall -y aegisdrift
 
 
 # ----------------------------------------------------------- stage 3: runtime
@@ -61,19 +61,19 @@ ENV PYTHONUNBUFFERED=1 \
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl libpq5 \
  && rm -rf /var/lib/apt/lists/* \
- && groupadd --system --gid 1001 silentshift \
- && useradd --system --uid 1001 --gid silentshift --create-home silentshift
+ && groupadd --system --gid 1001 aegisdrift \
+ && useradd --system --uid 1001 --gid aegisdrift --create-home aegisdrift
 
 COPY --from=deps /opt/venv /opt/venv
 
 WORKDIR /app
-COPY --chown=silentshift:silentshift backend/ ./backend/
-COPY --from=console --chown=silentshift:silentshift /build/dist ./frontend/dist
-COPY --chown=silentshift:silentshift docker-entrypoint.sh ./
+COPY --chown=aegisdrift:aegisdrift backend/ ./backend/
+COPY --from=console --chown=aegisdrift:aegisdrift /build/dist ./frontend/dist
+COPY --chown=aegisdrift:aegisdrift docker-entrypoint.sh ./
 
 RUN chmod +x docker-entrypoint.sh
 
-USER silentshift
+USER aegisdrift
 EXPOSE 8000
 
 # The container is unhealthy only when the database is unreachable, so a transient

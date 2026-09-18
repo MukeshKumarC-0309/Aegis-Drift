@@ -73,14 +73,14 @@ Full list in [`.env.example`](../.env.example).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: silentshift
+  name: aegisdrift
 spec:
   replicas: 3
   selector:
-    matchLabels: { app: silentshift }
+    matchLabels: { app: aegisdrift }
   template:
     metadata:
-      labels: { app: silentshift }
+      labels: { app: aegisdrift }
     spec:
       securityContext:
         runAsNonRoot: true
@@ -88,13 +88,13 @@ spec:
         fsGroup: 1001
       containers:
         - name: api
-          image: ghcr.io/your-org/silentshift:2.0.0
+          image: ghcr.io/your-org/aegisdrift:2.0.0
           ports: [{ containerPort: 8000 }]
           env:
             - name: SECRET_KEY
-              valueFrom: { secretKeyRef: { name: silentshift, key: secret-key } }
+              valueFrom: { secretKeyRef: { name: aegisdrift, key: secret-key } }
             - name: POSTGRES_PASSWORD
-              valueFrom: { secretKeyRef: { name: silentshift, key: postgres-password } }
+              valueFrom: { secretKeyRef: { name: aegisdrift, key: postgres-password } }
             - name: POSTGRES_HOST
               value: postgres.data.svc.cluster.local
             - name: REDIS_URL
@@ -159,8 +159,8 @@ month and lower `RETENTION_DAYS`.
 ## Backups
 
 ```bash
-docker compose exec postgres pg_dump -U silentshift -Fc silentshift > backup-$(date +%F).dump
-docker compose exec -T postgres pg_restore -U silentshift -d silentshift --clean < backup.dump
+docker compose exec postgres pg_dump -U aegisdrift -Fc aegisdrift > backup-$(date +%F).dump
+docker compose exec -T postgres pg_restore -U aegisdrift -d aegisdrift --clean < backup.dump
 ```
 
 Back up the database only. The image is reproducible from the repository, and no state lives on the
@@ -172,22 +172,22 @@ container filesystem.
 
 ```yaml
 scrape_configs:
-  - job_name: silentshift
+  - job_name: aegisdrift
     metrics_path: /metrics
     static_configs:
-      - targets: ['silentshift:8000']
+      - targets: ['aegisdrift:8000']
 ```
 
 | Metric | Use |
 |---|---|
-| `silentshift_http_request_duration_seconds` | Latency SLO |
-| `silentshift_http_requests_total` | Error rate by status |
-| `silentshift_events_ingested_total` | Ingestion throughput |
-| `silentshift_alerts_raised_total` | Alert volume by severity |
-| `silentshift_identity_scoring_seconds` | Detection pipeline cost |
-| `silentshift_identities_by_state` | Fleet posture |
-| `silentshift_fleet_mean_risk` | Aggregate risk trend |
-| `silentshift_websocket_clients` | Console connections |
+| `aegisdrift_http_request_duration_seconds` | Latency SLO |
+| `aegisdrift_http_requests_total` | Error rate by status |
+| `aegisdrift_events_ingested_total` | Ingestion throughput |
+| `aegisdrift_alerts_raised_total` | Alert volume by severity |
+| `aegisdrift_identity_scoring_seconds` | Detection pipeline cost |
+| `aegisdrift_identities_by_state` | Fleet posture |
+| `aegisdrift_fleet_mean_risk` | Aggregate risk trend |
+| `aegisdrift_websocket_clients` | Console connections |
 
 Alerts worth having: p99 latency above 2s, 5xx rate above 1%, scoring duration above 1s, ingestion
 dropping to zero (a silent forwarder looks exactly like a quiet fleet).

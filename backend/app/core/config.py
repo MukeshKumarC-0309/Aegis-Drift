@@ -35,7 +35,7 @@ CSVList = Annotated[list[str], NoDecode, BeforeValidator(_split_csv)]
 
 #: Where a generated development secret is cached. Git-ignored, and only ever used
 #: when SECRET_KEY is not supplied by the environment.
-_SECRET_CACHE = Path(__file__).resolve().parents[2] / ".silentshift" / "dev-secret.key"
+_SECRET_CACHE = Path(__file__).resolve().parents[2] / ".aegisdrift" / "dev-secret.key"
 
 
 def _local_secret_key() -> str:
@@ -77,7 +77,7 @@ class Settings(BaseSettings):
     )
 
     # ------------------------------------------------------------------ core
-    PROJECT_NAME: str = "SilentShift"
+    PROJECT_NAME: str = "Aegis Drift"
     PROJECT_DESCRIPTION: str = (
         "Identity Threat Detection & Response platform: behavioural baselines, "
         "temporal sequence correlation, context-aware damping and explainable AI."
@@ -99,8 +99,8 @@ class Settings(BaseSettings):
     PASSWORD_MIN_LENGTH: int = 12
 
     # Bootstrap administrator, created on first start when absent.
-    FIRST_SUPERUSER_EMAIL: str = "admin@silentshift.io"
-    FIRST_SUPERUSER_PASSWORD: str = "ChangeMe_S1lentShift!"
+    FIRST_SUPERUSER_EMAIL: str = "admin@aegisdrift.com"
+    FIRST_SUPERUSER_PASSWORD: str = "ChangeMe_Aeg1sDrift!"
     AUTO_SEED: bool = True
 
     # The analyst/responder/viewer logins exist so the RBAC tiers can be tried out.
@@ -124,10 +124,10 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------- persistence
     POSTGRES_HOST: str | None = None
     POSTGRES_PORT: int = 5432
-    POSTGRES_USER: str = "silentshift"
-    POSTGRES_PASSWORD: str = "silentshift"
-    POSTGRES_DB: str = "silentshift"
-    SQLITE_PATH: str = "./silentshift.db"
+    POSTGRES_USER: str = "aegisdrift"
+    POSTGRES_PASSWORD: str = "aegisdrift"
+    POSTGRES_DB: str = "aegisdrift"
+    SQLITE_PATH: str = "./aegisdrift.db"
     DATABASE_URL: str | None = None
     DB_POOL_SIZE: int = 10
     DB_MAX_OVERFLOW: int = 20
@@ -189,7 +189,7 @@ class Settings(BaseSettings):
                 "SECRET_KEY is the auto-generated development key. Set it explicitly "
                 '(python -c "import secrets; print(secrets.token_urlsafe(48))").'
             )
-        if self.FIRST_SUPERUSER_PASSWORD == "ChangeMe_S1lentShift!":
+        if self.FIRST_SUPERUSER_PASSWORD == "ChangeMe_Aeg1sDrift!":
             problems.append("FIRST_SUPERUSER_PASSWORD is still the documented default.")
         if self.CORS_ORIGINS == ["*"]:
             problems.append("CORS_ORIGINS must not be '*' in production.")

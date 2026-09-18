@@ -45,7 +45,7 @@ class BackgroundScheduler:
         if self._task is not None:
             return
         self._stopping.clear()
-        self._task = asyncio.create_task(self._run(), name="silentshift-scheduler")
+        self._task = asyncio.create_task(self._run(), name="aegisdrift-scheduler")
         logger.info("scheduler.started", interval=settings.RECOMPUTE_INTERVAL_SECONDS)
 
     async def stop(self) -> None:

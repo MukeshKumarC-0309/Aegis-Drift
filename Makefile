@@ -1,4 +1,4 @@
-# SilentShift — developer entrypoints.
+# Aegis Drift — developer entrypoints.
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
@@ -123,7 +123,7 @@ db-check: ## Verify the models and migrations agree
 
 .PHONY: db-reset
 db-reset: ## Delete the local SQLite database
-	rm -f $(BACKEND)/silentshift.db
+	rm -f $(BACKEND)/aegisdrift.db
 	@echo "Local database removed. It will be recreated and seeded on next start."
 
 # ------------------------------------------------------------------- build
@@ -133,7 +133,7 @@ build-web: ## Build the console for production
 
 .PHONY: docker-build
 docker-build: ## Build the production image
-	docker build -t silentshift:latest .
+	docker build -t aegisdrift:latest .
 
 # ------------------------------------------------------------------ compose
 .PHONY: up

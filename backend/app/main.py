@@ -1,4 +1,4 @@
-"""SilentShift application factory and ASGI entrypoint."""
+"""Aegis Drift application factory and ASGI entrypoint."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from app.api.v1.endpoints import health
 from app.api.v1.router import api_router
 from app.core.config import settings
-from app.core.exceptions import SilentShiftError
+from app.core.exceptions import AegisDriftError
 from app.core.logging import configure_logging, get_logger
 from app.core.middleware import (
     RateLimitMiddleware,
@@ -33,7 +33,7 @@ configure_logging()
 logger = get_logger(__name__)
 
 API_DESCRIPTION = """
-**SilentShift** is an Identity Threat Detection & Response (ITDR) platform. It detects
+**Aegis Drift** is an Identity Threat Detection & Response (ITDR) platform. It detects
 low-and-slow account compromise and insider risk that per-event rules structurally
 cannot see.
 
@@ -128,16 +128,16 @@ def _print_welcome(seeded: bool) -> None:
     lines = [
         "",
         "  ┌─────────────────────────────────────────────────────────────┐",
-        "  │  SilentShift is running                                     │",
+        "  │  Aegis Drift is running                                     │",
         "  └─────────────────────────────────────────────────────────────┘",
         "",
         f"    Console    {url}",
         f"    API docs   {url}/docs",
         "",
         "    Sign in with any of:",
-        "      admin@silentshift.io      ChangeMe_S1lentShift!   (full access)",
-        "      analyst@silentshift.io    AnalystDemo_2026!       (triage, cases)",
-        "      viewer@silentshift.io     ViewerDemo_2026!        (read only)",
+        "      admin@aegisdrift.com      ChangeMe_Aeg1sDrift!   (full access)",
+        "      analyst@aegisdrift.com    AnalystDemo_2026!       (triage, cases)",
+        "      viewer@aegisdrift.com     ViewerDemo_2026!        (read only)",
         "",
     ]
     if seeded:
@@ -160,7 +160,7 @@ def create_app() -> FastAPI:
         redoc_url="/redoc" if not settings.is_production else None,
         openapi_url="/openapi.json" if not settings.is_production else None,
         lifespan=lifespan,
-        contact={"name": "SilentShift Engineering", "url": "https://github.com/"},
+        contact={"name": "Aegis Drift Engineering", "url": "https://github.com/"},
         license_info={"name": "Apache 2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0"},
     )
 
@@ -195,8 +195,8 @@ def create_app() -> FastAPI:
 
 
 def _register_exception_handlers(app: FastAPI) -> None:
-    @app.exception_handler(SilentShiftError)
-    async def _domain_error(_: Request, exc: SilentShiftError) -> JSONResponse:
+    @app.exception_handler(AegisDriftError)
+    async def _domain_error(_: Request, exc: AegisDriftError) -> JSONResponse:
         return JSONResponse(status_code=exc.status_code, content=exc.to_dict())
 
     @app.exception_handler(RequestValidationError)

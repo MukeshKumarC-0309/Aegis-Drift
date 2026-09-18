@@ -27,7 +27,7 @@ class TestHealth:
     async def test_metrics_are_exposed(self, client: AsyncClient):
         response = await client.get("/metrics")
         assert response.status_code == 200
-        assert "silentshift_http_requests_total" in response.text
+        assert "aegisdrift_http_requests_total" in response.text
 
 
 class TestAuthentication:
@@ -300,7 +300,7 @@ class TestApiKeys:
         created = await client.post("/api/v1/auth/api-keys", headers=admin_headers, json={"name": "ingest"})
         assert created.status_code == 201
         raw = created.json()["key"]
-        assert raw.startswith("ss_live_")
+        assert raw.startswith("ad_live_")
 
         listed = await client.get("/api/v1/auth/api-keys", headers=admin_headers)
         assert "key" not in listed.json()[0]

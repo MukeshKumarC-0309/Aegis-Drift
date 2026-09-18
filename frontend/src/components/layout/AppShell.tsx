@@ -89,7 +89,7 @@ export function AppShell() {
             <IconShield className="size-4 text-white" />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold tracking-tight">SilentShift</p>
+            <p className="truncate text-sm font-semibold tracking-tight">Aegis Drift</p>
             <p className="text-[10px] tracking-wider text-[--color-ink-faint] uppercase">ITDR Console</p>
           </div>
         </div>

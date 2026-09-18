@@ -3,13 +3,13 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "silentshift"
+name = "aegisdrift"
 version = "2.0.0"
-description = "SilentShift - Identity Threat Detection & Response (ITDR) platform"
+description = "Aegis Drift - Identity Threat Detection & Response (ITDR) platform"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
-authors = [{ name = "SilentShift Engineering" }]
+authors = [{ name = "Aegis Drift Engineering" }]
 dependencies = [
   "fastapi>=0.115.0",
   "uvicorn[standard]>=0.32.0",

@@ -103,11 +103,11 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: silentshift
-          POSTGRES_PASSWORD: silentshift
-          POSTGRES_DB: silentshift
+          POSTGRES_USER: aegisdrift
+          POSTGRES_PASSWORD: aegisdrift
+          POSTGRES_DB: aegisdrift
         options: >-
-          --health-cmd "pg_isready -U silentshift"
+          --health-cmd "pg_isready -U aegisdrift"
           --health-interval 5s --health-timeout 5s --health-retries 12
         ports: ['5432:5432']
       redis:
@@ -119,9 +119,9 @@ jobs:
     env:
       SECRET_KEY: ci-secret-key-that-is-long-enough-for-validation-x
       POSTGRES_HOST: localhost
-      POSTGRES_USER: silentshift
-      POSTGRES_PASSWORD: silentshift
-      POSTGRES_DB: silentshift
+      POSTGRES_USER: aegisdrift
+      POSTGRES_PASSWORD: aegisdrift
+      POSTGRES_DB: aegisdrift
       REDIS_URL: redis://localhost:6379/0
       AUTO_SEED: 'true'
       RATE_LIMIT_ENABLED: 'false'
@@ -153,7 +153,7 @@ jobs:
       - name: Smoke test the running stack
         run: python scripts/smoke_test.py http://127.0.0.1:8000
         env:
-          SILENTSHIFT_ADMIN_PASSWORD: CiSuperuser_2026!
+          AEGISDRIFT_ADMIN_PASSWORD: CiSuperuser_2026!
 
   docker:
     name: Docker image
@@ -169,24 +169,24 @@ jobs:
           context: .
           push: false
           load: true
-          tags: silentshift:ci
+          tags: aegisdrift:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Boot the image and check its health endpoint
         run: |
-          docker run -d --name silentshift-ci \
+          docker run -d --name aegisdrift-ci \
             -e SECRET_KEY=ci-secret-key-that-is-long-enough-for-validation-x \
             -e FIRST_SUPERUSER_PASSWORD='CiSuperuser_2026!' \
             -e AUTO_SEED=true \
-            -p 8000:8000 silentshift:ci
+            -p 8000:8000 aegisdrift:ci
           for i in $(seq 1 60); do
             curl -fsS http://127.0.0.1:8000/health/live >/dev/null 2>&1 && break
             sleep 3
           done
           curl -fsS http://127.0.0.1:8000/health/live
-          docker logs silentshift-ci | tail -30
-          docker rm -f silentshift-ci
+          docker logs aegisdrift-ci | tail -30
+          docker rm -f aegisdrift-ci
 
   security:
     name: Security scan

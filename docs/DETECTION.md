@@ -1,6 +1,6 @@
 # The detection engine
 
-How SilentShift decides that an identity is drifting, and why it is built this way.
+How Aegis Drift decides that an identity is drifting, and why it is built this way.
 
 ---
 

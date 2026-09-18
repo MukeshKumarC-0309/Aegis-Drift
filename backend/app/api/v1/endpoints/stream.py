@@ -15,7 +15,7 @@ import json
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy import select
 
-from app.core.exceptions import SilentShiftError
+from app.core.exceptions import AegisDriftError
 from app.core.logging import get_logger
 from app.core.metrics import WEBSOCKET_CLIENTS
 from app.core.security import TokenType, decode_token
@@ -37,7 +37,7 @@ async def live_feed(
 ) -> None:
     try:
         claims = decode_token(token, expected=TokenType.ACCESS)
-    except SilentShiftError:
+    except AegisDriftError:
         await websocket.close(code=4401, reason="Invalid or expired token")
         return
 

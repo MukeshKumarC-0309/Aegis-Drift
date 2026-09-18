@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 
-class SilentShiftError(Exception):
+class AegisDriftError(Exception):
     """Base class for every error the application raises deliberately."""
 
     status_code: int = 500
@@ -33,43 +33,43 @@ class SilentShiftError(Exception):
         return {"error": payload}
 
 
-class NotFoundError(SilentShiftError):
+class NotFoundError(AegisDriftError):
     status_code = 404
     code = "not_found"
     message = "The requested resource does not exist."
 
 
-class ConflictError(SilentShiftError):
+class ConflictError(AegisDriftError):
     status_code = 409
     code = "conflict"
     message = "The resource is in a conflicting state."
 
 
-class ValidationError(SilentShiftError):
+class ValidationError(AegisDriftError):
     status_code = 422
     code = "validation_error"
     message = "The supplied payload failed validation."
 
 
-class AuthenticationError(SilentShiftError):
+class AuthenticationError(AegisDriftError):
     status_code = 401
     code = "unauthenticated"
     message = "Valid credentials are required."
 
 
-class PermissionDeniedError(SilentShiftError):
+class PermissionDeniedError(AegisDriftError):
     status_code = 403
     code = "permission_denied"
     message = "Your role does not permit this operation."
 
 
-class RateLimitedError(SilentShiftError):
+class RateLimitedError(AegisDriftError):
     status_code = 429
     code = "rate_limited"
     message = "Too many requests. Slow down."
 
 
-class ServiceUnavailableError(SilentShiftError):
+class ServiceUnavailableError(AegisDriftError):
     status_code = 503
     code = "service_unavailable"
     message = "A dependency is unavailable."

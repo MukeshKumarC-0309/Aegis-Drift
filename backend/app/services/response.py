@@ -332,11 +332,11 @@ class ResponseService:
         count = int(
             (
                 await db.execute(
-                    select(func.count()).select_from(Case).where(Case.reference.like(f"SS-{year}-%"))
+                    select(func.count()).select_from(Case).where(Case.reference.like(f"AD-{year}-%"))
                 )
             ).scalar_one()
         )
-        return f"SS-{year}-{count + 1:04d}"
+        return f"AD-{year}-{count + 1:04d}"
 
     # --------------------------------------------------------------- playbooks
     async def run_playbook(

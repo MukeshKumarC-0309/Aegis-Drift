@@ -7,7 +7,7 @@ Base URL `/api/v1`. Interactive docs at `/docs` (Swagger) and `/redoc`, disabled
 ```bash
 curl -X POST http://localhost:8000/api/v1/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"admin@silentshift.io","password":"ChangeMe_S1lentShift!"}'
+  -d '{"email":"admin@aegisdrift.com","password":"ChangeMe_Aeg1sDrift!"}'
 ```
 
 ```json
