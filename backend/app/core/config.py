@@ -108,6 +108,11 @@ class Settings(BaseSettings):
     # complete compromise on anything public — the responder role can quarantine
     # accounts and execute playbooks. They are therefore off by default in
     # production, and refused outright if enabled while still using these values.
+    # Days of synthetic history generated per identity when seeding. Lower values
+    # boot faster, which matters on a constrained host: seeding blocks startup, and
+    # a health check that times out fails the deploy.
+    SEED_HISTORY_DAYS: int = 40
+
     SEED_DEMO_ACCOUNTS: bool | None = None
     DEMO_ANALYST_PASSWORD: str = "AnalystDemo_2026!"
     DEMO_RESPONDER_PASSWORD: str = "ResponderDemo_2026!"

@@ -47,7 +47,8 @@ from app.services.simulator import generate_normal_history
 logger = get_logger(__name__)
 
 #: Days of synthetic history generated per identity for baseline learning.
-HISTORY_DAYS = 40
+#: Configurable so a constrained host can seed a smaller estate and start sooner.
+HISTORY_DAYS = settings.SEED_HISTORY_DAYS
 
 #: Reproducible estate across restarts.
 SEED = 20260917
@@ -312,7 +313,7 @@ async def _seed_history(db: AsyncSession) -> int:
     """Generate and ingest business-hours telemetry so baselines have something to learn."""
     identities = (await db.execute(select(Identity))).scalars().all()
     now = utcnow()
-    start = now - timedelta(days=HISTORY_DAYS)
+    start = now - timedelta(days=settings.SEED_HISTORY_DAYS)
     total = 0
 
     for identity in identities:

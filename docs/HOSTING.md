@@ -89,6 +89,7 @@ Custom domains work on Render's free plan.
 | Redis | Not provisioned. The event bus falls back to in-process, which is correct for one instance. |
 | Telemetry retention | Cut to 30 days to stay inside the small free database. |
 | Cold start | 30–60 seconds after idle. |
+| Seeded estate | 30 days of history rather than 40, so startup stays inside the health-check window on 0.1 CPU. 21 of 24 baselines still reach maturity. |
 
 None of these affect the detection engine's correctness — only its liveness.
 
