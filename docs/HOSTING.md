@@ -54,6 +54,46 @@ DEMO_VIEWER_PASSWORD=<something strong>
 Leave any of the three at its published value and the application refuses to boot. That is
 deliberate.
 
+## Shipping changes
+
+`autoDeploy: true` and `branch: main` are set, so **pushing to `main` redeploys automatically**.
+
+```bash
+git add -A
+git commit -m "..."
+git push          # Render starts building within seconds
+```
+
+What happens, in order:
+
+1. Render detects the push and rebuilds the Docker image — **5–10 minutes**, because it
+   recompiles the console and reinstalls Python dependencies.
+2. The new container waits for the database, runs `alembic upgrade head`, then starts.
+3. Render swaps traffic over only once the health check passes.
+
+### Your data survives
+
+The database is a separate service, so a redeploy does not touch it. Seeding is skipped when
+identities already exist — cases, alerts, dispositions and injected telemetry all persist
+across deploys. Verified: an estate with an open case came back identical after a restart,
+with `seed.identities_present` in the log instead of a re-seed.
+
+### Things that will catch you out
+
+| Situation | What happens |
+|---|---|
+| Build fails | The previous version keeps serving. Render does not swap to a broken image. |
+| You changed a model but did not generate a migration | `alembic upgrade head` succeeds with nothing to do, then the app errors at runtime against a stale schema. Run `make db-check` before pushing — CI runs it too. |
+| A migration fails | The container exits before serving, so the old one stays up. Check the deploy log. |
+| You edited `render.yaml` | Blueprint changes are **not** picked up automatically. Trigger a manual sync from the Render dashboard. |
+| You changed an environment variable in the dashboard | That alone triggers a redeploy. |
+| Free tier, single instance | Expect a few seconds of downtime during the swap. |
+
+### Skipping a deploy
+
+Add `[skip render]` to the commit message for documentation-only changes, or turn off
+auto-deploy in the dashboard and deploy manually.
+
 ## Adding a real domain later
 
 Buy the domain (Cloudflare and Namecheap are both around £10/yr), then:
