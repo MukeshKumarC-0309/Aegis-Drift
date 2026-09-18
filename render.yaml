@@ -51,6 +51,12 @@ services:
       # To run a public demo, set it to true AND set all three DEMO_*_PASSWORD
       # variables to strong values, or the application will refuse to start.
 
+      # Render routes straight to the container, so the nginx rule that restricts
+      # /metrics to internal ranges never applies here. Without a token the
+      # endpoint is not served at all in production; set this to scrape it.
+      - key: METRICS_TOKEN
+        generateValue: true
+
       - key: CORS_ORIGINS
         value: https://aegisdrift.onrender.com
       - key: TRUSTED_HOSTS

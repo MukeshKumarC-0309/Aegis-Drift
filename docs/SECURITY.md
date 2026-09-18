@@ -62,6 +62,14 @@ A redaction list scrubs `password`, `token`, `key` and `secret` before write —
 [regression test](../backend/tests/integration/test_api.py) asserting a created user's password
 never appears in the audit trail.
 
+### Metrics endpoint
+`/metrics` discloses endpoint structure, request volumes and fleet risk posture. The bundled
+nginx configuration restricts it to RFC-1918 ranges, but a platform that routes directly to
+the container — Render, Fly, Railway — never sees that rule. In production the endpoint
+therefore requires `METRICS_TOKEN` as a bearer token, and is **not served at all** when no
+token is configured. Rejections return 404 rather than 401, so its existence is not
+advertised. Outside production it is open, for convenience.
+
 ### Container
 Non-root (uid 1001), no build toolchain in the runtime layer, dependencies installed into a
 virtualenv copied from a builder stage, health check on the dependency-free probe. CI runs Trivy

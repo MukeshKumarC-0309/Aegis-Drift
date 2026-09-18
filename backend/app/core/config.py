@@ -145,6 +145,13 @@ class Settings(BaseSettings):
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     LOG_FORMAT: Literal["json", "console"] = "console"
     METRICS_ENABLED: bool = True
+
+    # Scrape credential for /metrics. The endpoint discloses endpoint structure,
+    # traffic volumes and fleet risk posture, so in production it is served only
+    # when this is set and presented as a bearer token. A reverse proxy that
+    # restricts the path is the alternative, but the application cannot verify
+    # one is present — so it fails closed instead of assuming.
+    METRICS_TOKEN: str | None = None
     SENTRY_DSN: AnyHttpUrl | None = None
 
     # ------------------------------------------------------------- rate limiting

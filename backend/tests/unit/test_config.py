@@ -238,3 +238,17 @@ class TestEnvironment:
 
     def test_local_exposes_the_docs(self):
         assert Settings(**BASE, ENVIRONMENT="local").docs_url == "/docs"
+
+
+class TestMetricsExposure:
+    """/metrics discloses endpoint structure, traffic volume and fleet risk.
+
+    On a platform that routes straight to the container there is no reverse proxy
+    to restrict it, so the application fails closed rather than assuming one.
+    """
+
+    def test_token_is_unset_by_default(self):
+        assert Settings(_env_file=None).METRICS_TOKEN is None
+
+    def test_a_token_can_be_configured(self):
+        assert Settings(**PRODUCTION, METRICS_TOKEN="scrape-me").METRICS_TOKEN == "scrape-me"

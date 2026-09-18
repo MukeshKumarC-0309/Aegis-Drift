@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import hmac
 import time
 from datetime import datetime
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Request, Response, status
 from sqlalchemy import text
 
 from app.api.deps import DbSession
@@ -73,8 +74,26 @@ async def readiness(db: DbSession, response: Response) -> dict:
 
 
 @router.get("/metrics", tags=["Health"], summary="Prometheus metrics", include_in_schema=False)
-async def metrics() -> Response:
+async def metrics(request: Request) -> Response:
+    """Prometheus exposition.
+
+    Open outside production for convenience. In production the endpoint reveals
+    endpoint structure, request volumes and fleet risk posture, so it requires
+    ``METRICS_TOKEN`` as a bearer token. When no token is configured the endpoint
+    is not served at all — failing closed, because the application has no way to
+    confirm that a reverse proxy is restricting it.
+
+    Returns 404 rather than 401 so the endpoint's existence is not advertised.
+    """
     if not settings.METRICS_ENABLED:
         return Response(status_code=status.HTTP_404_NOT_FOUND)
+
+    if settings.is_production:
+        if not settings.METRICS_TOKEN:
+            return Response(status_code=status.HTTP_404_NOT_FOUND)
+        supplied = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+        if not supplied or not hmac.compare_digest(supplied, settings.METRICS_TOKEN):
+            return Response(status_code=status.HTTP_404_NOT_FOUND)
+
     payload, content_type = render_metrics()
     return Response(content=payload, media_type=content_type)

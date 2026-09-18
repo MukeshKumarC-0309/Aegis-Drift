@@ -78,6 +78,24 @@ identities already exist — cases, alerts, dispositions and injected telemetry 
 across deploys. Verified: an estate with an open case came back identical after a restart,
 with `seed.identities_present` in the log instead of a re-seed.
 
+### Scraping metrics
+
+The blueprint generates a `METRICS_TOKEN`. Copy it from the Render dashboard and scrape with:
+
+```yaml
+scrape_configs:
+  - job_name: aegisdrift
+    metrics_path: /metrics
+    scheme: https
+    authorization:
+      credentials: <METRICS_TOKEN from the dashboard>
+    static_configs:
+      - targets: ['aegisdrift.onrender.com']
+```
+
+Without the token the endpoint returns 404 — deliberately, since Render routes straight to
+the container and the nginx restriction in this repository never applies there.
+
 ### Things that will catch you out
 
 | Situation | What happens |
