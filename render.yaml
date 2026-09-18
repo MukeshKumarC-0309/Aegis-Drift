@@ -1,0 +1,78 @@
+# Render blueprint — free tier.
+#
+# Deploy: push to GitHub, then on render.com choose New → Blueprint and point it
+# at this repository. Render reads this file and creates both services.
+#
+# Read docs/HOSTING.md first: the free tier has real limitations, and one of them
+# (the database being deleted when the trial ends) is only survivable because this
+# application re-seeds itself on boot.
+
+services:
+  - type: web
+    name: aegisdrift
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    branch: main
+    healthCheckPath: /health/live
+    autoDeploy: true
+
+    envVars:
+      # Render generates this once and keeps it. A stable key matters: regenerate
+      # it and every issued token is invalidated.
+      - key: SECRET_KEY
+        generateValue: true
+
+      # Production mode disables /docs and refuses to boot on insecure defaults.
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_FORMAT
+        value: json
+      - key: LOG_LEVEL
+        value: INFO
+
+      # You are prompted for this on first deploy. It must not be the documented
+      # default — the application will refuse to start if it is.
+      - key: FIRST_SUPERUSER_EMAIL
+        value: admin@aegisdrift.com
+      - key: FIRST_SUPERUSER_PASSWORD
+        sync: false
+
+      # Seeds the synthetic demonstration estate on first boot. Leave this on:
+      # on the free tier it is what makes a wiped database recoverable.
+      - key: AUTO_SEED
+        value: "true"
+
+      # SEED_DEMO_ACCOUNTS is deliberately unset. In production the analyst,
+      # responder and viewer logins are skipped, because their passwords are
+      # published in the README and the responder role can quarantine accounts.
+      # To run a public demo, set it to true AND set all three DEMO_*_PASSWORD
+      # variables to strong values, or the application will refuse to start.
+
+      - key: CORS_ORIGINS
+        value: https://aegisdrift.onrender.com
+      - key: TRUSTED_HOSTS
+        value: aegisdrift.onrender.com
+
+      # One worker: the free tier has 512 MB, and each Uvicorn worker runs its own
+      # copy of the background scheduler.
+      - key: WORKERS
+        value: "1"
+
+      # Free Postgres is small, so keep less history than the 90-day default.
+      - key: RETENTION_DAYS
+        value: "30"
+
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aegisdrift-db
+          property: connectionString
+
+databases:
+  - name: aegisdrift-db
+    plan: free
+    region: oregon
+    databaseName: aegisdrift
+    user: aegisdrift

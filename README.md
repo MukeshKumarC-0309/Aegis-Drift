@@ -238,6 +238,7 @@ See [docs/SECURITY.md](docs/SECURITY.md).
 | [Architecture](docs/ARCHITECTURE.md) | Layering, data model, request lifecycle, design decisions |
 | [Detection engine](docs/DETECTION.md) | The mathematics, every vector, tuning guidance |
 | [API reference](docs/API.md) | All 66 endpoints, auth, ingestion, rule DSL |
+| [Hosting (free tier)](docs/HOSTING.md) | Deploying publicly for £0, and what breaks when you do |
 | [Deployment](docs/DEPLOYMENT.md) | Docker, Kubernetes, scaling, backups, observability |
 | [Security](docs/SECURITY.md) | Threat model, controls, hardening checklist |
 | [Contributing](CONTRIBUTING.md) | Setup, conventions, how to add a detection vector |
